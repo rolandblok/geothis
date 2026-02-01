@@ -23,6 +23,7 @@
 				<div class="region-toggle" role="group" aria-label="Region">
 					<button id="region-us" class="active" type="button">US states</button>
 					<button id="region-eu" type="button">Europe countries</button>
+					<button id="region-nl" type="button">Netherlands provinces</button>
 				</div>
 				<div class="quiz-toggle" role="group" aria-label="Question type">
 					<button id="quiz-state" class="active" type="button">States</button>
@@ -60,6 +61,7 @@
 			const langNlBtn = document.getElementById("lang-nl");
 			const regionUsBtn = document.getElementById("region-us");
 			const regionEuBtn = document.getElementById("region-eu");
+			const regionNlBtn = document.getElementById("region-nl");
 			const quizStateBtn = document.getElementById("quiz-state");
 			const quizCapitalBtn = document.getElementById("quiz-capital");
 			const modeChoiceBtn = document.getElementById("mode-choice");
@@ -70,6 +72,9 @@
 
 			let fipsToName = {};
 			let capitalByState = {};
+			let usMicroStates = new Set();
+			let netherlandsCapitalByProvince = {};
+			let netherlandsCapitalByProvinceNormalized = new Map();
 			let europeCapitalByCountry = {};
 			let europeCountryNames = new Set();
 			let i18nData = {};
@@ -87,7 +92,23 @@
 			let region = "us";
 			let microMarkersLayer = null;
 
-			const normalize = (value) => value.trim().toLowerCase();
+			const normalize = (value) =>
+				String(value)
+					.normalize("NFD")
+					.replace(/[\u0300-\u036f]/g, "")
+					.toLowerCase()
+					.replace(/&/g, "and")
+					.replace(/\u00a0/g, " ")
+					.replace(/[^a-z0-9]+/g, " ")
+					.trim();
+
+			const getCapitalOffset = (name) => {
+				const normalized = normalize(name || "");
+				if (normalized.includes("vatican") || normalized.includes("holy see")) {
+					return [8, -6];
+				}
+				return [0, 0];
+			};
 
 			const formatText = (text, vars = {}) =>
 				Object.entries(vars).reduce(
@@ -105,11 +126,24 @@
 				return typeof value === "string" ? formatText(value, vars) : value;
 			};
 
-			const regionLabel = () =>
-				region === "us" ? t("ui.state") : t("ui.country");
+			const regionLabel = () => {
+				switch (region) {
+					case "us":
+						return t("ui.state");
+					case "nl":
+						return t("ui.province");
+					default:
+						return t("ui.country");
+				}
+			};
 
 			const localizeState = (name) => {
-				const dict = region === "us" ? "states" : "countries";
+				const dict =
+					region === "us"
+						? "states"
+						: region === "nl"
+							? "provinces"
+							: "countries";
 				return (
 					i18nData[locale]?.[dict]?.[name] ||
 					i18nData.en?.[dict]?.[name] ||
@@ -128,37 +162,51 @@
 				const normalized = normalize(name);
 				return (
 					europeCountryNames.has(normalized) ||
-					normalized.includes("russia") ||
-					normalized.includes("bosnia")
+					normalized.includes("russia")
 				);
 			};
 
 			const loadStaticData = async () => {
-				const [usData, euCapitals, euCountriesData, enTranslations, nlTranslations] =
-					await Promise.all([
-						fetch("data/us-states.json").then((response) => response.json()),
-						fetch("data/europe-capitals.json").then((response) => response.json()),
-						fetch("data/europe-countries.json").then((response) => response.json()),
-						fetch("data/i18n/en.json").then((response) => response.json()),
-						fetch("data/i18n/nl.json").then((response) => response.json())
-					]);
+				const [
+					usData,
+					nlCapitals,
+					euData,
+					enTranslations,
+					nlTranslations
+				] = await Promise.all([
+					fetch("data/us-states.json").then((response) => response.json()),
+					fetch("data/netherlands-capitals.json").then((response) => response.json()),
+					fetch("data/europe_countries.json").then((response) => response.json()),
+					fetch("data/i18n/en.json").then((response) => response.json()),
+					fetch("data/i18n/nl.json").then((response) => response.json())
+				]);
 
 				fipsToName = usData.fipsToName || {};
 				capitalByState = usData.capitals || {};
-				europeCapitalByCountry = euCapitals || {};
-				const countriesList = Array.isArray(euCountriesData)
-					? euCountriesData
-					: euCountriesData?.countries || [];
-				const microList = Array.isArray(euCountriesData)
-					? []
-					: euCountriesData?.microCountries || [];
+				usMicroStates = new Set(
+					(usData.microStates || []).map((name) => normalize(name))
+				);
+				netherlandsCapitalByProvince = nlCapitals || {};
+				netherlandsCapitalByProvinceNormalized = new Map(
+					Object.entries(netherlandsCapitalByProvince).map(([name, info]) => [
+						normalize(name),
+						info
+					])
+				);
+				europeCapitalByCountry = euData?.capitals || {};
+				const countriesList = euData?.countries || [];
+				const microList = euData?.microCountries || [];
 
 				europeCountryNames = new Set(
-					(countriesList || []).map((name) => String(name).toLowerCase())
+					(countriesList || []).map((name) => normalize(name))
 				);
 				microCountries = new Set(
-					(microList || []).map((name) => String(name).toLowerCase())
+					(microList || []).map((name) => normalize(name))
 				);
+				regionBounds = {
+					...regionBounds,
+					eu: euData?.bounds || null
+				};
 				i18nData = {
 					en: enTranslations || {},
 					nl: nlTranslations || {}
@@ -166,40 +214,50 @@
 				applyLanguage();
 			};
 
-			const europeBounds = {
-				minLon: -25,
-				maxLon: 50,
-				minLat: 34,
-				maxLat: 72
-			};
-
+			let regionBounds = {};
 			let microCountries = new Set();
 
-			const isInEuropeBounds = ([lon, lat]) =>
-				lon >= europeBounds.minLon &&
-				lon <= europeBounds.maxLon &&
-				lat >= europeBounds.minLat &&
-				lat <= europeBounds.maxLat;
+			const splitLonRanges = (minLon, maxLon) =>
+				minLon <= maxLon
+					? [[minLon, maxLon]]
+					: [
+							[minLon, 180],
+							[-180, maxLon]
+						];
 
-			const intersectsEuropeBounds = (bounds) => {
-				if (!bounds) return false;
-				const [[minLon, minLat], [maxLon, maxLat]] = bounds;
-				return !(
-					maxLon < europeBounds.minLon ||
-					minLon > europeBounds.maxLon ||
-					maxLat < europeBounds.minLat ||
-					minLat > europeBounds.maxLat
+			const rangesOverlap = (rangeA, rangeB) =>
+				rangeA[0] <= rangeB[1] && rangeB[0] <= rangeA[1];
+
+			const isInBounds = (bounds, [lon, lat]) =>
+				lon >= bounds.minLon &&
+				lon <= bounds.maxLon &&
+				lat >= bounds.minLat &&
+				lat <= bounds.maxLat;
+
+			const intersectsBounds = (bounds, featureBounds) => {
+				if (!featureBounds) return false;
+				const [[minLon, minLat], [maxLon, maxLat]] = featureBounds;
+				if (maxLat < bounds.minLat || minLat > bounds.maxLat) return false;
+				const boundsRanges = splitLonRanges(bounds.minLon, bounds.maxLon);
+				const featureRanges = splitLonRanges(minLon, maxLon);
+				return boundsRanges.some((boundsRange) =>
+					featureRanges.some((featureRange) =>
+						rangesOverlap(boundsRange, featureRange)
+					)
 				);
 			};
 
-			const filterOverseasFrance = (feature) => {
-				if (normalize(feature.properties?.name || "") !== "france") {
-					return feature;
-				}
-				if (!feature.geometry) return feature;
+			const filterToBounds = (feature, bounds) => {
+				if (!bounds || !feature?.geometry) return feature;
+				const normalizedName = normalize(feature.properties?.name || "");
+				const useCentroid = normalizedName.includes("russia");
 				if (feature.geometry.type === "Polygon") {
-					const centroid = d3.geoCentroid(feature);
-					return isInEuropeBounds(centroid) ? feature : null;
+					if (useCentroid) {
+						const centroid = d3.geoCentroid(feature);
+						return isInBounds(bounds, centroid) ? feature : null;
+					}
+					const boundsForFeature = d3.geoBounds(feature);
+					return intersectsBounds(bounds, boundsForFeature) ? feature : null;
 				}
 				if (feature.geometry.type === "MultiPolygon") {
 					const filteredPolygons = feature.geometry.coordinates.filter((polygon) => {
@@ -211,73 +269,12 @@
 								coordinates: polygon
 							}
 						};
-						const centroid = d3.geoCentroid(polygonFeature);
-						return isInEuropeBounds(centroid);
-					});
-					if (!filteredPolygons.length) return null;
-					return {
-						...feature,
-						geometry: {
-							type: "MultiPolygon",
-							coordinates: filteredPolygons
+						if (useCentroid) {
+							const centroid = d3.geoCentroid(polygonFeature);
+							return isInBounds(bounds, centroid);
 						}
-					};
-				}
-				return feature;
-			};
-
-			const filterToEuropeBounds = (feature) => {
-				if (!feature?.geometry) return feature;
-				if (feature.geometry.type === "Polygon") {
-					const bounds = d3.geoBounds(feature);
-					return intersectsEuropeBounds(bounds) ? feature : null;
-				}
-				if (feature.geometry.type === "MultiPolygon") {
-					const filteredPolygons = feature.geometry.coordinates.filter((polygon) => {
-						const polygonFeature = {
-							type: "Feature",
-							properties: feature.properties,
-							geometry: {
-								type: "Polygon",
-								coordinates: polygon
-							}
-						};
-						const bounds = d3.geoBounds(polygonFeature);
-						return intersectsEuropeBounds(bounds);
-					});
-					if (!filteredPolygons.length) return null;
-					return {
-						...feature,
-						geometry: {
-							type: "MultiPolygon",
-							coordinates: filteredPolygons
-						}
-					};
-				}
-				return feature;
-			};
-
-			const filterSvalbard = (feature) => {
-				if (normalize(feature.properties?.name || "") !== "norway") {
-					return feature;
-				}
-				if (!feature.geometry) return feature;
-				if (feature.geometry.type === "Polygon") {
-					const centroid = d3.geoCentroid(feature);
-					return isInEuropeBounds(centroid) ? feature : null;
-				}
-				if (feature.geometry.type === "MultiPolygon") {
-					const filteredPolygons = feature.geometry.coordinates.filter((polygon) => {
-						const polygonFeature = {
-							type: "Feature",
-							properties: feature.properties,
-							geometry: {
-								type: "Polygon",
-								coordinates: polygon
-							}
-						};
-						const centroid = d3.geoCentroid(polygonFeature);
-						return isInEuropeBounds(centroid);
+						const boundsForFeature = d3.geoBounds(polygonFeature);
+						return intersectsBounds(bounds, boundsForFeature);
 					});
 					if (!filteredPolygons.length) return null;
 					return {
@@ -385,6 +382,7 @@
 				region = nextRegion;
 				regionUsBtn.classList.toggle("active", region === "us");
 				regionEuBtn.classList.toggle("active", region === "eu");
+				regionNlBtn.classList.toggle("active", region === "nl");
 				quizCapitalBtn.disabled = false;
 				loadRegionData();
 			};
@@ -395,6 +393,7 @@
 				questionLabelEl.textContent = t("ui.question");
 				regionUsBtn.textContent = t("ui.regionUs");
 				regionEuBtn.textContent = t("ui.regionEu");
+				regionNlBtn.textContent = t("ui.regionNl");
 				quizStateBtn.textContent = t("ui.quizState");
 				quizCapitalBtn.textContent = t("ui.quizCapital");
 				modeChoiceBtn.textContent = t("ui.modeChoice");
@@ -636,25 +635,23 @@
 						if (!state.properties.capitalCoords) return null;
 						const projected = projection(state.properties.capitalCoords);
 						if (!projected) return null;
-						return { state, coords: projected };
+						const [dx, dy] = getCapitalOffset(state.properties.name);
+						return { state, coords: [projected[0] + dx, projected[1] + dy] };
 					})
 					.filter(Boolean);
 
-				if (capitalPoints.length) {
-					capitalsLayer = mapSvg.append("g").attr("class", "capitals");
-					capitalsLayer
-						.selectAll("circle")
-						.data(capitalPoints)
-						.join("circle")
-						.attr("r", 4)
-						.attr("cx", (d) => d.coords[0])
-						.attr("cy", (d) => d.coords[1])
-						.on("click", (event, d) => checkMapAnswer(d.state));
+				if (region === "us") {
 				}
 
-				if (region === "eu") {
+				const microSet =
+					region === "eu"
+						? microCountries
+						: region === "us"
+							? usMicroStates
+							: null;
+				if (microSet && microSet.size) {
 					const microPoints = capitalPoints.filter((point) =>
-						microCountries.has(normalize(point.state.properties.name))
+						microSet.has(normalize(point.state.properties.name))
 					);
 
 					if (microPoints.length) {
@@ -672,25 +669,37 @@
 					}
 				}
 
+				if (capitalPoints.length) {
+					capitalsLayer = mapSvg.append("g").attr("class", "capitals");
+					capitalsLayer
+						.selectAll("circle")
+						.data(capitalPoints.filter((point) => !point.hideInCapitalsLayer))
+						.join("circle")
+						.attr("r", 4)
+						.attr("cx", (d) => d.coords[0])
+						.attr("cy", (d) => d.coords[1])
+						.attr("pointer-events", (d) => (d.isStandalone ? "none" : "auto"))
+						.on("click", (event, d) => checkMapAnswer(d.state));
+				}
+
 				pickNextState();
 			};
 
-			const loadRegionData = () => {
-				promptEl.textContent = t("ui.loading");
-				if (region === "us") {
-					fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json")
-						.then((response) => response.json())
-						.then((topology) => {
-							const geoData = topojson.feature(
-								topology,
-								topology.objects.states
-							);
-							const projection = d3.geoAlbersUsa().fitSize(
-								[975, 610],
-								geoData
-							);
+			const fetchJson = async (url) => {
+				const response = await fetch(url);
+				return response.json();
+			};
 
-							const features = geoData.features
+			const loadRegionData = async () => {
+				promptEl.textContent = t("ui.loading");
+				const configByRegion = {
+					us: {
+						url: "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json",
+						objectName: "states",
+						projectionFactory: (featureCollection) =>
+							d3.geoAlbersUsa().fitSize([975, 610], featureCollection),
+						transformFeatures: (features) =>
+							features
 								.map((feature) => {
 									const fips = String(feature.id).padStart(2, "0");
 									const stateName = fipsToName[fips] || "Unknown";
@@ -707,27 +716,24 @@
 										}
 									};
 								})
-								.filter((feature) => feature.properties.name !== "Unknown");
-
-							buildMap(features, projection);
-						})
-						.catch(() => {
-							promptEl.textContent = t("ui.loadFail");
-						});
-					return;
-				}
-
-				fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json")
-					.then((response) => response.json())
-					.then((topology) => {
-						const geoData = topojson.feature(
-							topology,
-							topology.objects.countries
-						);
-						const europeFeatures = geoData.features
-							.map((feature) => {
-								const name = feature.properties?.name || "";
-								const capitalInfo = europeCapitalByCountry[name];
+								.filter((feature) => feature.properties.name !== "Unknown")
+					},
+					nl: {
+						url: "https://cartomap.github.io/nl/wgs84/provincie_2023.topojson",
+						objectName: "provincie_2023",
+						projectionFactory: (featureCollection) =>
+							d3.geoMercator().fitSize([975, 610], featureCollection),
+						transformFeatures: (features) =>
+							features.map((feature) => {
+								const name =
+									feature.properties?.statnaam ||
+									feature.properties?.name ||
+									feature.properties?.NAME_1 ||
+									feature.properties?.name_1 ||
+									"";
+								const capitalInfo =
+									netherlandsCapitalByProvinceNormalized.get(normalize(name)) ||
+									netherlandsCapitalByProvince[name];
 								return {
 									...feature,
 									properties: {
@@ -740,22 +746,59 @@
 									}
 								};
 							})
-							.filter((feature) => isEuropeCountry(feature.properties.name))
-							.map(filterOverseasFrance)
-							.map(filterSvalbard)
-							.map(filterToEuropeBounds)
-							.filter(Boolean);
+					},
+					eu: {
+						url: "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json",
+						objectName: "countries",
+						projectionFactory: (featureCollection) =>
+							d3.geoMercator().fitSize([975, 610], featureCollection),
+						bounds: regionBounds.eu,
+						transformFeatures: (features) => {
+							const mapped = features
+								.map((feature) => {
+									const name = feature.properties?.name || "";
+									const capitalInfo = europeCapitalByCountry[name];
+									return {
+										...feature,
+										properties: {
+											...feature.properties,
+											name,
+											capital: capitalInfo?.capital || null,
+											capitalCoords: capitalInfo
+												? [capitalInfo.lon, capitalInfo.lat]
+												: null
+										}
+									};
+								})
+								.filter((feature) => isEuropeCountry(feature.properties.name));
+							return mapped;
+						}
+					}
+				};
 
-						const projection = d3.geoMercator().fitSize(
-							[975, 610],
-							{ type: "FeatureCollection", features: europeFeatures }
-						);
-
-						buildMap(europeFeatures, projection);
-					})
-					.catch(() => {
-						promptEl.textContent = t("ui.loadFail");
-					});
+				const config = configByRegion[region];
+				if (!config) return;
+				try {
+					const topology = await fetchJson(config.url);
+					const geoData = topojson.feature(
+						topology,
+						topology.objects[config.objectName]
+					);
+					const features = config.transformFeatures(geoData.features || []);
+					const boundedFeatures = config.bounds
+						? features
+								.map((feature) => filterToBounds(feature, config.bounds))
+								.filter(Boolean)
+						: features;
+					const fitCollection = {
+						type: "FeatureCollection",
+						features: boundedFeatures
+					};
+					const projection = config.projectionFactory(fitCollection);
+					buildMap(boundedFeatures, projection);
+				} catch (error) {
+					promptEl.textContent = t("ui.loadFail");
+				}
 			};
 
 			quizStateBtn.addEventListener("click", () => setQuizType("state"));
@@ -764,6 +807,7 @@
 			modeClickBtn.addEventListener("click", () => setMode("click"));
 			regionUsBtn.addEventListener("click", () => setRegion("us"));
 			regionEuBtn.addEventListener("click", () => setRegion("eu"));
+			regionNlBtn.addEventListener("click", () => setRegion("nl"));
 			langEnBtn.addEventListener("click", () => {
 				locale = "en";
 				applyLanguage();

@@ -8,7 +8,6 @@
 		"08": "Colorado",
 		"09": "Connecticut",
 		"10": "Delaware",
-		"11": "District of Columbia",
 		"12": "Florida",
 		"13": "Georgia",
 		"15": "Hawaii",
@@ -61,7 +60,6 @@
 		"Colorado": { "capital": "Denver", "lat": 39.739227, "lon": -104.984856 },
 		"Connecticut": { "capital": "Hartford", "lat": 41.764046, "lon": -72.682198 },
 		"Delaware": { "capital": "Dover", "lat": 39.157307, "lon": -75.519722 },
-		"District of Columbia": { "capital": "Washington", "lat": 38.9072, "lon": -77.0369 },
 		"Florida": { "capital": "Tallahassee", "lat": 30.438118, "lon": -84.281296 },
 		"Georgia": { "capital": "Atlanta", "lat": 33.749027, "lon": -84.388229 },
 		"Hawaii": { "capital": "Honolulu", "lat": 21.307442, "lon": -157.857376 },
@@ -104,5 +102,6 @@
 		"West Virginia": { "capital": "Charleston", "lat": 38.336246, "lon": -81.612328 },
 		"Wisconsin": { "capital": "Madison", "lat": 43.074684, "lon": -89.384445 },
 		"Wyoming": { "capital": "Cheyenne", "lat": 41.140259, "lon": -104.820236 }
-	}
+	},
+	"microStates": []
 }

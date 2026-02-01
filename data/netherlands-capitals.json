@@ -1,0 +1,14 @@
+{
+	"Drenthe": { "capital": "Assen", "lat": 53.0, "lon": 6.56 },
+	"Flevoland": { "capital": "Lelystad", "lat": 52.5185, "lon": 5.4714 },
+	"Fryslân": { "capital": "Leeuwarden", "lat": 53.2012, "lon": 5.7999 },
+	"Gelderland": { "capital": "Arnhem", "lat": 51.9851, "lon": 5.8987 },
+	"Groningen": { "capital": "Groningen", "lat": 53.2194, "lon": 6.5665 },
+	"Limburg": { "capital": "Maastricht", "lat": 50.8514, "lon": 5.69 },
+	"Noord-Brabant": { "capital": "'s-Hertogenbosch", "lat": 51.6978, "lon": 5.3037 },
+	"Noord Holland": { "capital": "Haarlem", "lat": 52.3874, "lon": 4.6462 },
+	"Overijssel": { "capital": "Zwolle", "lat": 52.5168, "lon": 6.083 },
+	"Utrecht": { "capital": "Utrecht", "lat": 52.0907, "lon": 5.1214 },
+	"Zeeland": { "capital": "Middelburg", "lat": 51.4988, "lon": 3.61 },
+	"Zuid-Holland": { "capital": "The Hague", "lat": 52.0705, "lon": 4.3007 }
+}

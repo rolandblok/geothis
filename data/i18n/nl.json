@@ -5,11 +5,13 @@
 		"question": "Vraag",
 		"regionUs": "Amerikaanse staten",
 		"regionEu": "Europese landen",
+		"regionNl": "Nederlandse provincies",
 		"quizState": "Staten",
 		"quizCapital": "Hoofdsteden",
 		"modeChoice": "Meerkeuze",
 		"modeClick": "Klik op de kaart",
 		"state": "staat",
+		"province": "provincie",
 		"country": "land",
 		"loading": "Kaart laden…",
 		"loadFail": "Kaartgegevens laden mislukt.",
@@ -130,6 +132,21 @@
 		"Vatican": "Vaticaanstad",
 		"Holy See": "Vaticaanstad"
 	},
+	"provinces": {
+		"Drenthe": "Drenthe",
+		"Flevoland": "Flevoland",
+		"Fryslân": "Fryslân",
+		"Fryslan": "Fryslân",
+		"Gelderland": "Gelderland",
+		"Groningen": "Groningen",
+		"Limburg": "Limburg",
+		"Noord-Brabant": "Noord-Brabant",
+		"Noord-Holland": "Noord-Holland",
+		"Overijssel": "Overijssel",
+		"Utrecht": "Utrecht",
+		"Zeeland": "Zeeland",
+		"Zuid-Holland": "Zuid-Holland"
+	},
 	"capitals": {
 		"Montgomery": "Montgomery",
 		"Juneau": "Juneau",
@@ -230,6 +247,18 @@
 		"Ankara": "Ankara",
 		"Kyiv": "Kyiv",
 		"London": "Londen",
-		"Vatican City": "Vaticaanstad"
+		"Vatican City": "Vaticaanstad",
+		"Assen": "Assen",
+		"Lelystad": "Lelystad",
+		"Leeuwarden": "Leeuwarden",
+		"Arnhem": "Arnhem",
+		"Groningen": "Groningen",
+		"Maastricht": "Maastricht",
+		"'s-Hertogenbosch": "'s-Hertogenbosch",
+		"Haarlem": "Haarlem",
+		"Zwolle": "Zwolle",
+		"Utrecht": "Utrecht",
+		"Middelburg": "Middelburg",
+		"The Hague": "Den Haag"
 	}
 }
