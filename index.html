@@ -11,8 +11,15 @@
 	<body>
 		<div class="container">
 			<header>
-				<h1>Guess the Highlighted State</h1>
-				<div class="score">Score: <span id="score">0</span> | Question: <span id="question-count">0</span></div>
+				<h1 id="title">Guess the Highlighted State</h1>
+				<div class="score">
+					<span id="score-label">Score</span>: <span id="score">0</span> |
+					<span id="question-label">Question</span>: <span id="question-count">0</span>
+				</div>
+				<div class="lang-toggle" role="group" aria-label="Language">
+					<button id="lang-en" class="active" type="button">English</button>
+					<button id="lang-nl" type="button">Nederlands</button>
+				</div>
 				<div class="region-toggle" role="group" aria-label="Region">
 					<button id="region-us" class="active" type="button">US states</button>
 					<button id="region-eu" type="button">Europe countries</button>
@@ -46,6 +53,11 @@
 			const stateLabelEl = document.getElementById("state-label");
 			const stateLabelButton = stateLabelEl.querySelector("button");
 			const choicesEl = document.getElementById("choices");
+			const titleEl = document.getElementById("title");
+			const scoreLabelEl = document.getElementById("score-label");
+			const questionLabelEl = document.getElementById("question-label");
+			const langEnBtn = document.getElementById("lang-en");
+			const langNlBtn = document.getElementById("lang-nl");
 			const regionUsBtn = document.getElementById("region-us");
 			const regionEuBtn = document.getElementById("region-eu");
 			const quizStateBtn = document.getElementById("quiz-state");
@@ -56,231 +68,12 @@
 			const scoreEl = document.getElementById("score");
 			const questionCountEl = document.getElementById("question-count");
 
-			const fipsToName = {
-				"01": "Alabama",
-				"02": "Alaska",
-				"04": "Arizona",
-				"05": "Arkansas",
-				"06": "California",
-				"08": "Colorado",
-				"09": "Connecticut",
-				"10": "Delaware",
-				"11": "District of Columbia",
-				"12": "Florida",
-				"13": "Georgia",
-				"15": "Hawaii",
-				"16": "Idaho",
-				"17": "Illinois",
-				"18": "Indiana",
-				"19": "Iowa",
-				"20": "Kansas",
-				"21": "Kentucky",
-				"22": "Louisiana",
-				"23": "Maine",
-				"24": "Maryland",
-				"25": "Massachusetts",
-				"26": "Michigan",
-				"27": "Minnesota",
-				"28": "Mississippi",
-				"29": "Missouri",
-				"30": "Montana",
-				"31": "Nebraska",
-				"32": "Nevada",
-				"33": "New Hampshire",
-				"34": "New Jersey",
-				"35": "New Mexico",
-				"36": "New York",
-				"37": "North Carolina",
-				"38": "North Dakota",
-				"39": "Ohio",
-				"40": "Oklahoma",
-				"41": "Oregon",
-				"42": "Pennsylvania",
-				"44": "Rhode Island",
-				"45": "South Carolina",
-				"46": "South Dakota",
-				"47": "Tennessee",
-				"48": "Texas",
-				"49": "Utah",
-				"50": "Vermont",
-				"51": "Virginia",
-				"53": "Washington",
-				"54": "West Virginia",
-				"55": "Wisconsin",
-				"56": "Wyoming"
-			};
-
-			const capitalByState = {
-				Alabama: { capital: "Montgomery", lat: 32.377716, lon: -86.300568 },
-				Alaska: { capital: "Juneau", lat: 58.301598, lon: -134.420212 },
-				Arizona: { capital: "Phoenix", lat: 33.448143, lon: -112.096962 },
-				Arkansas: { capital: "Little Rock", lat: 34.746613, lon: -92.288986 },
-				California: { capital: "Sacramento", lat: 38.576668, lon: -121.493629 },
-				Colorado: { capital: "Denver", lat: 39.739227, lon: -104.984856 },
-				Connecticut: { capital: "Hartford", lat: 41.764046, lon: -72.682198 },
-				Delaware: { capital: "Dover", lat: 39.157307, lon: -75.519722 },
-				"District of Columbia": { capital: "Washington", lat: 38.9072, lon: -77.0369 },
-				Florida: { capital: "Tallahassee", lat: 30.438118, lon: -84.281296 },
-				Georgia: { capital: "Atlanta", lat: 33.749027, lon: -84.388229 },
-				Hawaii: { capital: "Honolulu", lat: 21.307442, lon: -157.857376 },
-				Idaho: { capital: "Boise", lat: 43.617775, lon: -116.199722 },
-				Illinois: { capital: "Springfield", lat: 39.798363, lon: -89.654961 },
-				Indiana: { capital: "Indianapolis", lat: 39.768623, lon: -86.162643 },
-				Iowa: { capital: "Des Moines", lat: 41.591087, lon: -93.603729 },
-				Kansas: { capital: "Topeka", lat: 39.048191, lon: -95.677956 },
-				Kentucky: { capital: "Frankfort", lat: 38.186722, lon: -84.875374 },
-				Louisiana: { capital: "Baton Rouge", lat: 30.457069, lon: -91.187393 },
-				Maine: { capital: "Augusta", lat: 44.307167, lon: -69.781693 },
-				Maryland: { capital: "Annapolis", lat: 38.978764, lon: -76.490936 },
-				Massachusetts: { capital: "Boston", lat: 42.358162, lon: -71.063698 },
-				Michigan: { capital: "Lansing", lat: 42.733635, lon: -84.555328 },
-				Minnesota: { capital: "Saint Paul", lat: 44.955097, lon: -93.102211 },
-				Mississippi: { capital: "Jackson", lat: 32.303848, lon: -90.182106 },
-				Missouri: { capital: "Jefferson City", lat: 38.579201, lon: -92.172935 },
-				Montana: { capital: "Helena", lat: 46.585709, lon: -112.018417 },
-				Nebraska: { capital: "Lincoln", lat: 40.808075, lon: -96.699654 },
-				Nevada: { capital: "Carson City", lat: 39.163914, lon: -119.766121 },
-				"New Hampshire": { capital: "Concord", lat: 43.206898, lon: -71.537994 },
-				"New Jersey": { capital: "Trenton", lat: 40.22039, lon: -74.7643 },
-				"New Mexico": { capital: "Santa Fe", lat: 35.68224, lon: -105.939728 },
-				"New York": { capital: "Albany", lat: 42.652843, lon: -73.757874 },
-				"North Carolina": { capital: "Raleigh", lat: 35.78043, lon: -78.639099 },
-				"North Dakota": { capital: "Bismarck", lat: 46.82085, lon: -100.783318 },
-				Ohio: { capital: "Columbus", lat: 39.961346, lon: -82.999069 },
-				Oklahoma: { capital: "Oklahoma City", lat: 35.492207, lon: -97.503342 },
-				Oregon: { capital: "Salem", lat: 44.938461, lon: -123.030403 },
-				Pennsylvania: { capital: "Harrisburg", lat: 40.264378, lon: -76.883598 },
-				"Rhode Island": { capital: "Providence", lat: 41.830914, lon: -71.414963 },
-				"South Carolina": { capital: "Columbia", lat: 34.000343, lon: -81.033211 },
-				"South Dakota": { capital: "Pierre", lat: 44.367031, lon: -100.346405 },
-				Tennessee: { capital: "Nashville", lat: 36.16581, lon: -86.784241 },
-				Texas: { capital: "Austin", lat: 30.27467, lon: -97.740349 },
-				Utah: { capital: "Salt Lake City", lat: 40.777477, lon: -111.888237 },
-				Vermont: { capital: "Montpelier", lat: 44.262436, lon: -72.580536 },
-				Virginia: { capital: "Richmond", lat: 37.538857, lon: -77.43364 },
-				Washington: { capital: "Olympia", lat: 47.035805, lon: -122.905014 },
-				"West Virginia": { capital: "Charleston", lat: 38.336246, lon: -81.612328 },
-				Wisconsin: { capital: "Madison", lat: 43.074684, lon: -89.384445 },
-				Wyoming: { capital: "Cheyenne", lat: 41.140259, lon: -104.820236 }
-			};
-
-			const europeCapitalByCountry = {
-				Albania: { capital: "Tirana", lat: 41.3275, lon: 19.8187 },
-				Andorra: { capital: "Andorra la Vella", lat: 42.5063, lon: 1.5218 },
-				Armenia: { capital: "Yerevan", lat: 40.1872, lon: 44.5152 },
-				Austria: { capital: "Vienna", lat: 48.2082, lon: 16.3738 },
-				Azerbaijan: { capital: "Baku", lat: 40.4093, lon: 49.8671 },
-				Belarus: { capital: "Minsk", lat: 53.9006, lon: 27.559 },
-				Belgium: { capital: "Brussels", lat: 50.8503, lon: 4.3517 },
-				"Bosnia and Herzegovina": { capital: "Sarajevo", lat: 43.8563, lon: 18.4131 },
-				Bulgaria: { capital: "Sofia", lat: 42.6977, lon: 23.3219 },
-				Croatia: { capital: "Zagreb", lat: 45.815, lon: 15.9819 },
-				Cyprus: { capital: "Nicosia", lat: 35.1856, lon: 33.3823 },
-				Czechia: { capital: "Prague", lat: 50.0755, lon: 14.4378 },
-				Denmark: { capital: "Copenhagen", lat: 55.6761, lon: 12.5683 },
-				Estonia: { capital: "Tallinn", lat: 59.437, lon: 24.7536 },
-				Finland: { capital: "Helsinki", lat: 60.1699, lon: 24.9384 },
-				France: { capital: "Paris", lat: 48.8566, lon: 2.3522 },
-				Georgia: { capital: "Tbilisi", lat: 41.7151, lon: 44.8271 },
-				Germany: { capital: "Berlin", lat: 52.52, lon: 13.405 },
-				Greece: { capital: "Athens", lat: 37.9838, lon: 23.7275 },
-				Hungary: { capital: "Budapest", lat: 47.4979, lon: 19.0402 },
-				Iceland: { capital: "Reykjavik", lat: 64.1466, lon: -21.9426 },
-				Ireland: { capital: "Dublin", lat: 53.3498, lon: -6.2603 },
-				Italy: { capital: "Rome", lat: 41.9028, lon: 12.4964 },
-				Kosovo: { capital: "Pristina", lat: 42.6629, lon: 21.1655 },
-				Latvia: { capital: "Riga", lat: 56.9496, lon: 24.1052 },
-				Liechtenstein: { capital: "Vaduz", lat: 47.141, lon: 9.5209 },
-				Lithuania: { capital: "Vilnius", lat: 54.6872, lon: 25.2797 },
-				Luxembourg: { capital: "Luxembourg", lat: 49.6116, lon: 6.1319 },
-				Malta: { capital: "Valletta", lat: 35.8978, lon: 14.5125 },
-				Moldova: { capital: "Chisinau", lat: 47.0105, lon: 28.8638 },
-				Monaco: { capital: "Monaco", lat: 43.7384, lon: 7.4246 },
-				Montenegro: { capital: "Podgorica", lat: 42.4304, lon: 19.2594 },
-				Netherlands: { capital: "Amsterdam", lat: 52.3676, lon: 4.9041 },
-				"North Macedonia": { capital: "Skopje", lat: 41.9981, lon: 21.4254 },
-				Norway: { capital: "Oslo", lat: 59.9139, lon: 10.7522 },
-				Poland: { capital: "Warsaw", lat: 52.2297, lon: 21.0122 },
-				Portugal: { capital: "Lisbon", lat: 38.7223, lon: -9.1393 },
-				Romania: { capital: "Bucharest", lat: 44.4268, lon: 26.1025 },
-				Russia: { capital: "Moscow", lat: 55.7558, lon: 37.6173 },
-				"San Marino": { capital: "San Marino", lat: 43.9424, lon: 12.4578 },
-				Serbia: { capital: "Belgrade", lat: 44.7866, lon: 20.4489 },
-				Slovakia: { capital: "Bratislava", lat: 48.1486, lon: 17.1077 },
-				Slovenia: { capital: "Ljubljana", lat: 46.0569, lon: 14.5058 },
-				Spain: { capital: "Madrid", lat: 40.4168, lon: -3.7038 },
-				Sweden: { capital: "Stockholm", lat: 59.3293, lon: 18.0686 },
-				Switzerland: { capital: "Bern", lat: 46.948, lon: 7.4474 },
-				Turkey: { capital: "Ankara", lat: 39.9334, lon: 32.8597 },
-				Ukraine: { capital: "Kyiv", lat: 50.4501, lon: 30.5234 },
-				"United Kingdom": { capital: "London", lat: 51.5074, lon: -0.1278 },
-				"Vatican City": { capital: "Vatican City", lat: 41.9029, lon: 12.4534 }
-			};
-
-			const europeCountryNames = new Set(
-				[
-					"albania",
-					"andorra",
-					"armenia",
-					"austria",
-					"azerbaijan",
-					"belarus",
-					"belgium",
-					"bosnia and herzegovina",
-					"bosnia and herzeg.",
-					"bulgaria",
-					"croatia",
-					"cyprus",
-					"czechia",
-					"czech republic",
-					"denmark",
-					"estonia",
-					"finland",
-					"france",
-					"georgia",
-					"germany",
-					"greece",
-					"hungary",
-					"iceland",
-					"ireland",
-					"italy",
-					"kosovo",
-					"latvia",
-					"liechtenstein",
-					"lithuania",
-					"luxembourg",
-					"malta",
-					"moldova",
-					"republic of moldova",
-					"monaco",
-					"montenegro",
-					"netherlands",
-					"north macedonia",
-					"macedonia",
-					"norway",
-					"poland",
-					"portugal",
-					"romania",
-					
-					"san marino",
-					"russia",
-					"russian federation",
-					"serbia",
-					"republic of serbia",
-					"slovakia",
-					"slovenia",
-					"spain",
-					"sweden",
-					"switzerland",
-					"turkey",
-					"ukraine",
-					"united kingdom",
-					"great britain",
-					"vatican",
-					"holy see",
-					"vatican city"
-				].map((name) => name.toLowerCase())
-			);
+			let fipsToName = {};
+			let capitalByState = {};
+			let europeCapitalByCountry = {};
+			let europeCountryNames = new Set();
+			let i18nData = {};
+			let locale = "en";
 
 			let states = [];
 			let remainingStates = [];
@@ -292,10 +85,44 @@
 			let quizType = "state";
 			let capitalsLayer = null;
 			let region = "us";
+			let microMarkersLayer = null;
 
 			const normalize = (value) => value.trim().toLowerCase();
 
-			const regionLabel = () => (region === "us" ? "state" : "country");
+			const formatText = (text, vars = {}) =>
+				Object.entries(vars).reduce(
+					(result, [key, value]) =>
+						result.replaceAll(`{${key}}`, String(value)),
+					text
+				);
+
+			const t = (path, vars) => {
+				const parts = path.split(".");
+				const getValue = (obj) =>
+					parts.reduce((acc, key) => (acc ? acc[key] : undefined), obj);
+				const value =
+					getValue(i18nData[locale]) ?? getValue(i18nData.en) ?? path;
+				return typeof value === "string" ? formatText(value, vars) : value;
+			};
+
+			const regionLabel = () =>
+				region === "us" ? t("ui.state") : t("ui.country");
+
+			const localizeState = (name) => {
+				const dict = region === "us" ? "states" : "countries";
+				return (
+					i18nData[locale]?.[dict]?.[name] ||
+					i18nData.en?.[dict]?.[name] ||
+					name
+				);
+			};
+
+			const localizeCapital = (name) =>
+				name
+					? i18nData[locale]?.capitals?.[name] ||
+						i18nData.en?.capitals?.[name] ||
+						name
+					: "";
 
 			const isEuropeCountry = (name) => {
 				const normalized = normalize(name);
@@ -306,12 +133,47 @@
 				);
 			};
 
+			const loadStaticData = async () => {
+				const [usData, euCapitals, euCountriesData, enTranslations, nlTranslations] =
+					await Promise.all([
+						fetch("data/us-states.json").then((response) => response.json()),
+						fetch("data/europe-capitals.json").then((response) => response.json()),
+						fetch("data/europe-countries.json").then((response) => response.json()),
+						fetch("data/i18n/en.json").then((response) => response.json()),
+						fetch("data/i18n/nl.json").then((response) => response.json())
+					]);
+
+				fipsToName = usData.fipsToName || {};
+				capitalByState = usData.capitals || {};
+				europeCapitalByCountry = euCapitals || {};
+				const countriesList = Array.isArray(euCountriesData)
+					? euCountriesData
+					: euCountriesData?.countries || [];
+				const microList = Array.isArray(euCountriesData)
+					? []
+					: euCountriesData?.microCountries || [];
+
+				europeCountryNames = new Set(
+					(countriesList || []).map((name) => String(name).toLowerCase())
+				);
+				microCountries = new Set(
+					(microList || []).map((name) => String(name).toLowerCase())
+				);
+				i18nData = {
+					en: enTranslations || {},
+					nl: nlTranslations || {}
+				};
+				applyLanguage();
+			};
+
 			const europeBounds = {
 				minLon: -25,
 				maxLon: 50,
 				minLat: 34,
 				maxLat: 72
 			};
+
+			let microCountries = new Set();
 
 			const isInEuropeBounds = ([lon, lat]) =>
 				lon >= europeBounds.minLon &&
@@ -437,10 +299,15 @@
 				return array;
 			};
 
-			const getAnswerLabel = (state) =>
+			const getAnswerKey = (state) =>
 				quizType === "capital"
 					? state.properties.capital
 					: state.properties.name;
+
+			const getAnswerLabel = (state) =>
+				quizType === "capital"
+					? localizeCapital(state.properties.capital)
+					: localizeState(state.properties.name);
 
 			const hasCapital = (state) =>
 				Boolean(state?.properties?.capital);
@@ -450,14 +317,26 @@
 
 			const buildChoices = () => {
 				if (!currentState) return [];
-				const correctName = getAnswerLabel(currentState);
+				const correctKey = getAnswerKey(currentState);
+				const correctLabel = getAnswerLabel(currentState);
+				if (!correctKey || !correctLabel) return [];
+
 				const pool = getEligibleStates(states)
 					.filter((state) => state !== currentState)
-					.map((state) => getAnswerLabel(state))
-					.filter(Boolean);
-				if (!correctName) return [];
-				shuffle(pool);
-				const options = [correctName, ...pool.slice(0, 4)];
+					.map((state) => ({
+						key: getAnswerKey(state),
+						label: getAnswerLabel(state)
+					}))
+					.filter((option) => option.key && option.label);
+
+				const uniquePool = Array.from(
+					new Map(pool.map((option) => [option.key, option])).values()
+				);
+				shuffle(uniquePool);
+				const options = [
+					{ key: correctKey, label: correctLabel },
+					...uniquePool.slice(0, 4)
+				];
 				return shuffle(options);
 			};
 
@@ -474,8 +353,8 @@
 					const button = document.createElement("button");
 					button.type = "button";
 					button.className = "choice";
-					button.textContent = option;
-					button.addEventListener("click", () => checkAnswer(option));
+					button.textContent = option.label;
+					button.addEventListener("click", () => checkAnswer(option.key));
 					choicesEl.appendChild(button);
 				});
 			};
@@ -510,6 +389,47 @@
 				loadRegionData();
 			};
 
+			const applyLanguage = () => {
+				titleEl.textContent = t("ui.title");
+				scoreLabelEl.textContent = t("ui.score");
+				questionLabelEl.textContent = t("ui.question");
+				regionUsBtn.textContent = t("ui.regionUs");
+				regionEuBtn.textContent = t("ui.regionEu");
+				quizStateBtn.textContent = t("ui.quizState");
+				quizCapitalBtn.textContent = t("ui.quizCapital");
+				modeChoiceBtn.textContent = t("ui.modeChoice");
+				modeClickBtn.textContent = t("ui.modeClick");
+				langEnBtn.classList.toggle("active", locale === "en");
+				langNlBtn.classList.toggle("active", locale === "nl");
+				feedbackEl.textContent = "";
+				updateQuestionUI();
+				renderChoices();
+			};
+
+			const updateQuestionUI = () => {
+				if (!currentState) {
+					promptEl.textContent = t("ui.loading");
+					return;
+				}
+				if (mode === "choice") {
+					promptEl.textContent =
+						quizType === "capital"
+							? t("ui.promptCapital")
+							: t("ui.promptState", { thing: regionLabel() });
+					stateLabelEl.hidden = true;
+					stateLabelEl.style.display = "none";
+					stateLabelButton.textContent = "";
+				} else {
+					promptEl.textContent = "";
+					stateLabelButton.textContent =
+						quizType === "capital"
+							? localizeCapital(currentState.properties.capital)
+							: localizeState(currentState.properties.name);
+					stateLabelEl.hidden = false;
+					stateLabelEl.style.display = "flex";
+				}
+			};
+
 			const resetGame = () => {
 				score = 0;
 				questionCount = 0;
@@ -531,10 +451,16 @@
 					capitalsLayer
 						.style(
 							"display",
-							quizType === "capital" && mode === "choice" ? "block" : "none"
+							quizType === "capital" ? "block" : "none"
 						)
 						.selectAll("circle")
 						.classed("active", false);
+				}
+				if (microMarkersLayer) {
+					microMarkersLayer
+						.selectAll("circle")
+						.classed("correct", false)
+						.classed("wrong", false);
 				}
 				pickNextState();
 			};
@@ -543,7 +469,7 @@
 				if (!states.length) return;
 				const eligibleRemaining = getEligibleStates(remainingStates);
 				if (!eligibleRemaining.length) {
-					promptEl.textContent = "All states answered!";
+					promptEl.textContent = t("ui.allAnswered");
 					setInteraction(false);
 					return;
 				}
@@ -553,23 +479,7 @@
 				currentState = next;
 				questionCount += 1;
 				questionCountEl.textContent = questionCount;
-				if (mode === "choice") {
-					promptEl.textContent =
-						quizType === "capital"
-							? "Which capital is highlighted?"
-							: `Which ${regionLabel()} is highlighted?`;
-					stateLabelEl.hidden = true;
-					stateLabelEl.style.display = "none";
-					stateLabelButton.textContent = "";
-				} else {
-					promptEl.textContent = "";
-					stateLabelButton.textContent =
-						quizType === "capital"
-							? currentState.properties.capital
-							: currentState.properties.name;
-					stateLabelEl.hidden = false;
-					stateLabelEl.style.display = "flex";
-				}
+				updateQuestionUI();
 				renderChoices();
 				setInteraction(true);
 
@@ -583,7 +493,7 @@
 				if (capitalsLayer) {
 					capitalsLayer.style(
 						"display",
-						quizType === "capital" && mode === "choice" ? "block" : "none"
+						quizType === "capital" ? "block" : "none"
 					);
 					capitalsLayer
 						.selectAll("circle")
@@ -595,14 +505,22 @@
 								d.state === currentState
 						);
 				}
+				if (microMarkersLayer) {
+					microMarkersLayer
+						.selectAll("circle")
+						.classed(
+							"highlight",
+							(d) => mode === "choice" && quizType === "state" && d.state === currentState
+						);
+				}
 			};
 
 			const checkAnswer = (selected) => {
 				if (!currentState) return;
 				if (isLocked) return;
 				setInteraction(false);
-				const userAnswer = normalize(selected || "");
-				const correctAnswer = normalize(getAnswerLabel(currentState));
+				const userAnswer = selected || "";
+				const correctAnswer = getAnswerKey(currentState);
 				const targetPath = mapSvg
 					.selectAll("path")
 					.filter((d) => d === currentState);
@@ -612,21 +530,32 @@
 							?.selectAll("circle")
 							.filter((d) => d.state === currentState)
 						: null;
+				const targetMicro =
+					microMarkersLayer
+						?.selectAll("circle")
+						.filter((d) => d.state === currentState) || null;
 
 				if (userAnswer === correctAnswer) {
 					score += 1;
 					scoreEl.textContent = score;
-					feedbackEl.textContent = "Correct!";
+					feedbackEl.textContent = t("ui.correct");
 					targetPath.classed("correct", true).classed("wrong", false);
 					targetCapital?.classed("correct", true).classed("wrong", false);
+					targetMicro?.classed("correct", true).classed("wrong", false);
 					setTimeout(() => pickNextState(), 700);
 				} else {
+					const displayState = localizeState(currentState.properties.name);
+					const displayCapital = localizeCapital(currentState.properties.capital);
 					feedbackEl.textContent =
 						quizType === "capital"
-							? `Not quite — it was ${currentState.properties.capital} (${currentState.properties.name}).`
-							: `Not quite — it was ${currentState.properties.name}.`;
+							? t("ui.notQuiteCapital", {
+								capital: displayCapital,
+								state: displayState
+							})
+							: t("ui.notQuiteState", { state: displayState });
 					targetPath.classed("wrong", true).classed("correct", false);
 					targetCapital?.classed("wrong", true).classed("correct", false);
+					targetMicro?.classed("wrong", true).classed("correct", false);
 					setTimeout(() => pickNextState(), 900);
 				}
 			};
@@ -646,21 +575,37 @@
 							?.selectAll("circle")
 							.filter((d) => d.state === currentState)
 						: null;
+				const targetMicro =
+					microMarkersLayer
+						?.selectAll("circle")
+						.filter((d) => d.state === currentState) || null;
 
 				if (clickedState === currentState) {
 					score += 1;
 					scoreEl.textContent = score;
-					feedbackEl.textContent = "Correct!";
+					feedbackEl.textContent = t("ui.correct");
 					targetPath.classed("correct", true).classed("wrong", false);
 					targetCapital?.classed("correct", true).classed("wrong", false);
+					targetMicro?.classed("correct", true).classed("wrong", false);
 					setTimeout(() => pickNextState(), 700);
 				} else {
+					const displayClicked = localizeState(clickedName);
+					const displayCorrect = localizeState(correctName);
+					const displayCapital = localizeCapital(currentState.properties.capital);
 					feedbackEl.textContent =
 						quizType === "capital"
-							? `Wrong — you clicked ${clickedName}. It was ${correctName} (capital ${currentState.properties.capital}).`
-							: `Wrong — you clicked ${clickedName}. It was ${correctName}.`;
+							? t("ui.wrongClickCapital", {
+								clicked: displayClicked,
+								state: displayCorrect,
+								capital: displayCapital
+							})
+							: t("ui.wrongClickState", {
+								clicked: displayClicked,
+								state: displayCorrect
+							});
 					targetPath.classed("wrong", true).classed("correct", false);
 					targetCapital?.classed("wrong", true).classed("correct", false);
+					targetMicro?.classed("wrong", true).classed("correct", false);
 					setTimeout(() => pickNextState(), 900);
 				}
 			};
@@ -671,6 +616,7 @@
 
 				mapSvg.selectAll("*").remove();
 				capitalsLayer = null;
+				microMarkersLayer = null;
 
 				remainingStates = [...features];
 				states = features;
@@ -702,14 +648,35 @@
 						.join("circle")
 						.attr("r", 4)
 						.attr("cx", (d) => d.coords[0])
-						.attr("cy", (d) => d.coords[1]);
+						.attr("cy", (d) => d.coords[1])
+						.on("click", (event, d) => checkMapAnswer(d.state));
+				}
+
+				if (region === "eu") {
+					const microPoints = capitalPoints.filter((point) =>
+						microCountries.has(normalize(point.state.properties.name))
+					);
+
+					if (microPoints.length) {
+						microMarkersLayer = mapSvg
+							.append("g")
+							.attr("class", "micro-markers");
+						microMarkersLayer
+							.selectAll("circle")
+							.data(microPoints)
+							.join("circle")
+							.attr("r", 7)
+							.attr("cx", (d) => d.coords[0])
+							.attr("cy", (d) => d.coords[1])
+							.on("click", (event, d) => checkMapAnswer(d.state));
+					}
 				}
 
 				pickNextState();
 			};
 
 			const loadRegionData = () => {
-				promptEl.textContent = "Loading map…";
+				promptEl.textContent = t("ui.loading");
 				if (region === "us") {
 					fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json")
 						.then((response) => response.json())
@@ -745,7 +712,7 @@
 							buildMap(features, projection);
 						})
 						.catch(() => {
-							promptEl.textContent = "Failed to load map data.";
+							promptEl.textContent = t("ui.loadFail");
 						});
 					return;
 				}
@@ -787,7 +754,7 @@
 						buildMap(europeFeatures, projection);
 					})
 					.catch(() => {
-						promptEl.textContent = "Failed to load map data.";
+						promptEl.textContent = t("ui.loadFail");
 					});
 			};
 
@@ -797,8 +764,20 @@
 			modeClickBtn.addEventListener("click", () => setMode("click"));
 			regionUsBtn.addEventListener("click", () => setRegion("us"));
 			regionEuBtn.addEventListener("click", () => setRegion("eu"));
+			langEnBtn.addEventListener("click", () => {
+				locale = "en";
+				applyLanguage();
+			});
+			langNlBtn.addEventListener("click", () => {
+				locale = "nl";
+				applyLanguage();
+			});
 
-			loadRegionData();
+			loadStaticData()
+				.then(() => loadRegionData())
+				.catch(() => {
+					promptEl.textContent = t("ui.loadLocalFail");
+				});
 		</script>
 	</body>
 </html>
