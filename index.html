@@ -6,195 +6,17 @@
 		<title>Guess the State</title>
 		<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 		<script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
-		<style>
-			:root {
-				color-scheme: light;
-				font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-			}
-
-			body {
-				margin: 0;
-				background: #f5f7fb;
-				color: #1f2937;
-				display: flex;
-				justify-content: center;
-				min-height: 100vh;
-			}
-
-			.container {
-				width: min(1100px, 96vw);
-				padding: 24px 20px 36px;
-			}
-
-			header {
-				display: flex;
-				flex-direction: column;
-				gap: 8px;
-				margin-bottom: 16px;
-			}
-
-			h1 {
-				margin: 0;
-				font-size: 1.9rem;
-			}
-
-			.mode-toggle {
-				display: inline-flex;
-				gap: 8px;
-				flex-wrap: wrap;
-			}
-
-			.mode-toggle button {
-				background: #e2e8f0;
-				color: #1f2937;
-				border: 1px solid transparent;
-			}
-
-			.mode-toggle button.active {
-				background: #2563eb;
-				color: #ffffff;
-			}
-
-			.quiz-toggle {
-				display: inline-flex;
-				gap: 8px;
-				flex-wrap: wrap;
-			}
-
-			.quiz-toggle button {
-				background: #e2e8f0;
-				color: #1f2937;
-				border: 1px solid transparent;
-			}
-
-			.quiz-toggle button.active {
-				background: #2563eb;
-				color: #ffffff;
-			}
-
-			.card {
-				background: #ffffff;
-				border-radius: 16px;
-				box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
-				padding: 20px;
-				display: flex;
-				flex-direction: column;
-				gap: 20px;
-			}
-
-			#map {
-				width: 100%;
-				height: auto;
-			}
-
-			.states path {
-				fill: #dce3ee;
-				stroke: #ffffff;
-				stroke-width: 1;
-			}
-
-			.states path.highlight {
-				fill: #f97316;
-			}
-
-			.states path.correct {
-				fill: #22c55e;
-			}
-
-			.states path.wrong {
-				fill: #ef4444;
-			}
-
-			.capitals circle {
-				fill: #94a3b8;
-				opacity: 0.5;
-			}
-
-			.capitals circle.active {
-				fill: #f97316;
-				opacity: 1;
-			}
-
-			.question {
-				display: flex;
-				flex-direction: column;
-				gap: 14px;
-			}
-
-			.question p {
-				margin: 0;
-				font-size: 1.1rem;
-			}
-
-			.input-row {
-				display: flex;
-				gap: 8px;
-				flex-wrap: wrap;
-			}
-
-			.choices {
-				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-				gap: 10px;
-			}
-
-			.state-label {
-				display: flex;
-				justify-content: center;
-			}
-
-			button {
-				border: none;
-				padding: 10px 16px;
-				border-radius: 10px;
-				background: #2563eb;
-				color: #ffffff;
-				font-weight: 600;
-				cursor: pointer;
-			}
-
-			button.secondary {
-				background: #e2e8f0;
-				color: #1f2937;
-			}
-
-			button.choice {
-				background: #f8fafc;
-				color: #1f2937;
-				border: 1px solid #cbd5f5;
-			}
-
-			button.display-only {
-				cursor: default;
-				pointer-events: none;
-			}
-
-			button.choice:hover {
-				background: #e2e8f0;
-			}
-
-			.feedback {
-				min-height: 24px;
-				font-weight: 600;
-			}
-
-			.score {
-				font-size: 0.95rem;
-				color: #475569;
-			}
-
-			@media (max-width: 900px) {
-				.container {
-					padding: 20px 16px 32px;
-				}
-			}
-		</style>
+		<link rel="stylesheet" href="style.css" />
 	</head>
 	<body>
 		<div class="container">
 			<header>
 				<h1>Guess the Highlighted State</h1>
 				<div class="score">Score: <span id="score">0</span> | Question: <span id="question-count">0</span></div>
+				<div class="region-toggle" role="group" aria-label="Region">
+					<button id="region-us" class="active" type="button">US states</button>
+					<button id="region-eu" type="button">Europe countries</button>
+				</div>
 				<div class="quiz-toggle" role="group" aria-label="Question type">
 					<button id="quiz-state" class="active" type="button">States</button>
 					<button id="quiz-capital" type="button">Capitals</button>
@@ -224,6 +46,8 @@
 			const stateLabelEl = document.getElementById("state-label");
 			const stateLabelButton = stateLabelEl.querySelector("button");
 			const choicesEl = document.getElementById("choices");
+			const regionUsBtn = document.getElementById("region-us");
+			const regionEuBtn = document.getElementById("region-eu");
 			const quizStateBtn = document.getElementById("quiz-state");
 			const quizCapitalBtn = document.getElementById("quiz-capital");
 			const modeChoiceBtn = document.getElementById("mode-choice");
@@ -340,6 +164,124 @@
 				Wyoming: { capital: "Cheyenne", lat: 41.140259, lon: -104.820236 }
 			};
 
+			const europeCapitalByCountry = {
+				Albania: { capital: "Tirana", lat: 41.3275, lon: 19.8187 },
+				Andorra: { capital: "Andorra la Vella", lat: 42.5063, lon: 1.5218 },
+				Armenia: { capital: "Yerevan", lat: 40.1872, lon: 44.5152 },
+				Austria: { capital: "Vienna", lat: 48.2082, lon: 16.3738 },
+				Azerbaijan: { capital: "Baku", lat: 40.4093, lon: 49.8671 },
+				Belarus: { capital: "Minsk", lat: 53.9006, lon: 27.559 },
+				Belgium: { capital: "Brussels", lat: 50.8503, lon: 4.3517 },
+				"Bosnia and Herzegovina": { capital: "Sarajevo", lat: 43.8563, lon: 18.4131 },
+				Bulgaria: { capital: "Sofia", lat: 42.6977, lon: 23.3219 },
+				Croatia: { capital: "Zagreb", lat: 45.815, lon: 15.9819 },
+				Cyprus: { capital: "Nicosia", lat: 35.1856, lon: 33.3823 },
+				Czechia: { capital: "Prague", lat: 50.0755, lon: 14.4378 },
+				Denmark: { capital: "Copenhagen", lat: 55.6761, lon: 12.5683 },
+				Estonia: { capital: "Tallinn", lat: 59.437, lon: 24.7536 },
+				Finland: { capital: "Helsinki", lat: 60.1699, lon: 24.9384 },
+				France: { capital: "Paris", lat: 48.8566, lon: 2.3522 },
+				Georgia: { capital: "Tbilisi", lat: 41.7151, lon: 44.8271 },
+				Germany: { capital: "Berlin", lat: 52.52, lon: 13.405 },
+				Greece: { capital: "Athens", lat: 37.9838, lon: 23.7275 },
+				Hungary: { capital: "Budapest", lat: 47.4979, lon: 19.0402 },
+				Iceland: { capital: "Reykjavik", lat: 64.1466, lon: -21.9426 },
+				Ireland: { capital: "Dublin", lat: 53.3498, lon: -6.2603 },
+				Italy: { capital: "Rome", lat: 41.9028, lon: 12.4964 },
+				Kosovo: { capital: "Pristina", lat: 42.6629, lon: 21.1655 },
+				Latvia: { capital: "Riga", lat: 56.9496, lon: 24.1052 },
+				Liechtenstein: { capital: "Vaduz", lat: 47.141, lon: 9.5209 },
+				Lithuania: { capital: "Vilnius", lat: 54.6872, lon: 25.2797 },
+				Luxembourg: { capital: "Luxembourg", lat: 49.6116, lon: 6.1319 },
+				Malta: { capital: "Valletta", lat: 35.8978, lon: 14.5125 },
+				Moldova: { capital: "Chisinau", lat: 47.0105, lon: 28.8638 },
+				Monaco: { capital: "Monaco", lat: 43.7384, lon: 7.4246 },
+				Montenegro: { capital: "Podgorica", lat: 42.4304, lon: 19.2594 },
+				Netherlands: { capital: "Amsterdam", lat: 52.3676, lon: 4.9041 },
+				"North Macedonia": { capital: "Skopje", lat: 41.9981, lon: 21.4254 },
+				Norway: { capital: "Oslo", lat: 59.9139, lon: 10.7522 },
+				Poland: { capital: "Warsaw", lat: 52.2297, lon: 21.0122 },
+				Portugal: { capital: "Lisbon", lat: 38.7223, lon: -9.1393 },
+				Romania: { capital: "Bucharest", lat: 44.4268, lon: 26.1025 },
+				Russia: { capital: "Moscow", lat: 55.7558, lon: 37.6173 },
+				"San Marino": { capital: "San Marino", lat: 43.9424, lon: 12.4578 },
+				Serbia: { capital: "Belgrade", lat: 44.7866, lon: 20.4489 },
+				Slovakia: { capital: "Bratislava", lat: 48.1486, lon: 17.1077 },
+				Slovenia: { capital: "Ljubljana", lat: 46.0569, lon: 14.5058 },
+				Spain: { capital: "Madrid", lat: 40.4168, lon: -3.7038 },
+				Sweden: { capital: "Stockholm", lat: 59.3293, lon: 18.0686 },
+				Switzerland: { capital: "Bern", lat: 46.948, lon: 7.4474 },
+				Turkey: { capital: "Ankara", lat: 39.9334, lon: 32.8597 },
+				Ukraine: { capital: "Kyiv", lat: 50.4501, lon: 30.5234 },
+				"United Kingdom": { capital: "London", lat: 51.5074, lon: -0.1278 },
+				"Vatican City": { capital: "Vatican City", lat: 41.9029, lon: 12.4534 }
+			};
+
+			const europeCountryNames = new Set(
+				[
+					"albania",
+					"andorra",
+					"armenia",
+					"austria",
+					"azerbaijan",
+					"belarus",
+					"belgium",
+					"bosnia and herzegovina",
+					"bosnia and herzeg.",
+					"bulgaria",
+					"croatia",
+					"cyprus",
+					"czechia",
+					"czech republic",
+					"denmark",
+					"estonia",
+					"finland",
+					"france",
+					"georgia",
+					"germany",
+					"greece",
+					"hungary",
+					"iceland",
+					"ireland",
+					"italy",
+					"kosovo",
+					"latvia",
+					"liechtenstein",
+					"lithuania",
+					"luxembourg",
+					"malta",
+					"moldova",
+					"republic of moldova",
+					"monaco",
+					"montenegro",
+					"netherlands",
+					"north macedonia",
+					"macedonia",
+					"norway",
+					"poland",
+					"portugal",
+					"romania",
+					
+					"san marino",
+					"russia",
+					"russian federation",
+					"serbia",
+					"republic of serbia",
+					"slovakia",
+					"slovenia",
+					"spain",
+					"sweden",
+					"switzerland",
+					"turkey",
+					"ukraine",
+					"united kingdom",
+					"great britain",
+					"vatican",
+					"holy see",
+					"vatican city"
+				].map((name) => name.toLowerCase())
+			);
+
 			let states = [];
 			let remainingStates = [];
 			let currentState = null;
@@ -349,8 +291,143 @@
 			let mode = "choice";
 			let quizType = "state";
 			let capitalsLayer = null;
+			let region = "us";
 
 			const normalize = (value) => value.trim().toLowerCase();
+
+			const regionLabel = () => (region === "us" ? "state" : "country");
+
+			const isEuropeCountry = (name) => {
+				const normalized = normalize(name);
+				return (
+					europeCountryNames.has(normalized) ||
+					normalized.includes("russia") ||
+					normalized.includes("bosnia")
+				);
+			};
+
+			const europeBounds = {
+				minLon: -25,
+				maxLon: 50,
+				minLat: 34,
+				maxLat: 72
+			};
+
+			const isInEuropeBounds = ([lon, lat]) =>
+				lon >= europeBounds.minLon &&
+				lon <= europeBounds.maxLon &&
+				lat >= europeBounds.minLat &&
+				lat <= europeBounds.maxLat;
+
+			const intersectsEuropeBounds = (bounds) => {
+				if (!bounds) return false;
+				const [[minLon, minLat], [maxLon, maxLat]] = bounds;
+				return !(
+					maxLon < europeBounds.minLon ||
+					minLon > europeBounds.maxLon ||
+					maxLat < europeBounds.minLat ||
+					minLat > europeBounds.maxLat
+				);
+			};
+
+			const filterOverseasFrance = (feature) => {
+				if (normalize(feature.properties?.name || "") !== "france") {
+					return feature;
+				}
+				if (!feature.geometry) return feature;
+				if (feature.geometry.type === "Polygon") {
+					const centroid = d3.geoCentroid(feature);
+					return isInEuropeBounds(centroid) ? feature : null;
+				}
+				if (feature.geometry.type === "MultiPolygon") {
+					const filteredPolygons = feature.geometry.coordinates.filter((polygon) => {
+						const polygonFeature = {
+							type: "Feature",
+							properties: feature.properties,
+							geometry: {
+								type: "Polygon",
+								coordinates: polygon
+							}
+						};
+						const centroid = d3.geoCentroid(polygonFeature);
+						return isInEuropeBounds(centroid);
+					});
+					if (!filteredPolygons.length) return null;
+					return {
+						...feature,
+						geometry: {
+							type: "MultiPolygon",
+							coordinates: filteredPolygons
+						}
+					};
+				}
+				return feature;
+			};
+
+			const filterToEuropeBounds = (feature) => {
+				if (!feature?.geometry) return feature;
+				if (feature.geometry.type === "Polygon") {
+					const bounds = d3.geoBounds(feature);
+					return intersectsEuropeBounds(bounds) ? feature : null;
+				}
+				if (feature.geometry.type === "MultiPolygon") {
+					const filteredPolygons = feature.geometry.coordinates.filter((polygon) => {
+						const polygonFeature = {
+							type: "Feature",
+							properties: feature.properties,
+							geometry: {
+								type: "Polygon",
+								coordinates: polygon
+							}
+						};
+						const bounds = d3.geoBounds(polygonFeature);
+						return intersectsEuropeBounds(bounds);
+					});
+					if (!filteredPolygons.length) return null;
+					return {
+						...feature,
+						geometry: {
+							type: "MultiPolygon",
+							coordinates: filteredPolygons
+						}
+					};
+				}
+				return feature;
+			};
+
+			const filterSvalbard = (feature) => {
+				if (normalize(feature.properties?.name || "") !== "norway") {
+					return feature;
+				}
+				if (!feature.geometry) return feature;
+				if (feature.geometry.type === "Polygon") {
+					const centroid = d3.geoCentroid(feature);
+					return isInEuropeBounds(centroid) ? feature : null;
+				}
+				if (feature.geometry.type === "MultiPolygon") {
+					const filteredPolygons = feature.geometry.coordinates.filter((polygon) => {
+						const polygonFeature = {
+							type: "Feature",
+							properties: feature.properties,
+							geometry: {
+								type: "Polygon",
+								coordinates: polygon
+							}
+						};
+						const centroid = d3.geoCentroid(polygonFeature);
+						return isInEuropeBounds(centroid);
+					});
+					if (!filteredPolygons.length) return null;
+					return {
+						...feature,
+						geometry: {
+							type: "MultiPolygon",
+							coordinates: filteredPolygons
+						}
+					};
+				}
+				return feature;
+			};
 
 			const shuffle = (array) => {
 				for (let index = array.length - 1; index > 0; index -= 1) {
@@ -365,12 +442,20 @@
 					? state.properties.capital
 					: state.properties.name;
 
+			const hasCapital = (state) =>
+				Boolean(state?.properties?.capital);
+
+			const getEligibleStates = (list) =>
+				quizType === "capital" ? list.filter(hasCapital) : list;
+
 			const buildChoices = () => {
 				if (!currentState) return [];
 				const correctName = getAnswerLabel(currentState);
-				const pool = states
+				const pool = getEligibleStates(states)
 					.filter((state) => state !== currentState)
-					.map((state) => getAnswerLabel(state));
+					.map((state) => getAnswerLabel(state))
+					.filter(Boolean);
+				if (!correctName) return [];
 				shuffle(pool);
 				const options = [correctName, ...pool.slice(0, 4)];
 				return shuffle(options);
@@ -417,6 +502,14 @@
 				resetGame();
 			};
 
+			const setRegion = (nextRegion) => {
+				region = nextRegion;
+				regionUsBtn.classList.toggle("active", region === "us");
+				regionEuBtn.classList.toggle("active", region === "eu");
+				quizCapitalBtn.disabled = false;
+				loadRegionData();
+			};
+
 			const resetGame = () => {
 				score = 0;
 				questionCount = 0;
@@ -428,7 +521,7 @@
 				if (mode !== "click") {
 					stateLabelButton.textContent = "";
 				}
-				remainingStates = [...states];
+				remainingStates = getEligibleStates(states);
 				mapSvg
 					.selectAll("path")
 					.classed("correct", false)
@@ -448,13 +541,15 @@
 
 			const pickNextState = () => {
 				if (!states.length) return;
-				if (!remainingStates.length) {
+				const eligibleRemaining = getEligibleStates(remainingStates);
+				if (!eligibleRemaining.length) {
 					promptEl.textContent = "All states answered!";
 					setInteraction(false);
 					return;
 				}
-				const index = Math.floor(Math.random() * remainingStates.length);
-				const next = remainingStates.splice(index, 1)[0];
+				const index = Math.floor(Math.random() * eligibleRemaining.length);
+				const next = eligibleRemaining.splice(index, 1)[0];
+				remainingStates = eligibleRemaining;
 				currentState = next;
 				questionCount += 1;
 				questionCountEl.textContent = questionCount;
@@ -462,7 +557,7 @@
 					promptEl.textContent =
 						quizType === "capital"
 							? "Which capital is highlighted?"
-							: "Which state is highlighted?";
+							: `Which ${regionLabel()} is highlighted?`;
 					stateLabelEl.hidden = true;
 					stateLabelEl.style.display = "none";
 					stateLabelButton.textContent = "";
@@ -511,12 +606,19 @@
 				const targetPath = mapSvg
 					.selectAll("path")
 					.filter((d) => d === currentState);
+				const targetCapital =
+					quizType === "capital"
+						? capitalsLayer
+							?.selectAll("circle")
+							.filter((d) => d.state === currentState)
+						: null;
 
 				if (userAnswer === correctAnswer) {
 					score += 1;
 					scoreEl.textContent = score;
 					feedbackEl.textContent = "Correct!";
 					targetPath.classed("correct", true).classed("wrong", false);
+					targetCapital?.classed("correct", true).classed("wrong", false);
 					setTimeout(() => pickNextState(), 700);
 				} else {
 					feedbackEl.textContent =
@@ -524,6 +626,7 @@
 							? `Not quite — it was ${currentState.properties.capital} (${currentState.properties.name}).`
 							: `Not quite — it was ${currentState.properties.name}.`;
 					targetPath.classed("wrong", true).classed("correct", false);
+					targetCapital?.classed("wrong", true).classed("correct", false);
 					setTimeout(() => pickNextState(), 900);
 				}
 			};
@@ -537,12 +640,19 @@
 				const targetPath = mapSvg
 					.selectAll("path")
 					.filter((d) => d === currentState);
+				const targetCapital =
+					quizType === "capital"
+						? capitalsLayer
+							?.selectAll("circle")
+							.filter((d) => d.state === currentState)
+						: null;
 
 				if (clickedState === currentState) {
 					score += 1;
 					scoreEl.textContent = score;
 					feedbackEl.textContent = "Correct!";
 					targetPath.classed("correct", true).classed("wrong", false);
+					targetCapital?.classed("correct", true).classed("wrong", false);
 					setTimeout(() => pickNextState(), 700);
 				} else {
 					feedbackEl.textContent =
@@ -550,34 +660,20 @@
 							? `Wrong — you clicked ${clickedName}. It was ${correctName} (capital ${currentState.properties.capital}).`
 							: `Wrong — you clicked ${clickedName}. It was ${correctName}.`;
 					targetPath.classed("wrong", true).classed("correct", false);
+					targetCapital?.classed("wrong", true).classed("correct", false);
 					setTimeout(() => pickNextState(), 900);
 				}
 			};
 
 
-			const drawMap = (topology) => {
-				const geoData = topojson.feature(topology, topology.objects.states);
-				const projection = d3.geoAlbersUsa().fitSize([975, 610], geoData);
+			const buildMap = (features, projection) => {
 				const path = d3.geoPath(projection);
 
-				states = geoData.features
-					.map((feature) => {
-						const fips = String(feature.id).padStart(2, "0");
-						const stateName = fipsToName[fips] || "Unknown";
-						const capitalInfo = capitalByState[stateName];
-						return {
-							...feature,
-							properties: {
-								...feature.properties,
-								name: stateName,
-								capital: capitalInfo?.capital || null,
-								capitalCoords: capitalInfo ? [capitalInfo.lon, capitalInfo.lat] : null
-							}
-						};
-					})
-					.filter((feature) => feature.properties.name !== "Unknown");
+				mapSvg.selectAll("*").remove();
+				capitalsLayer = null;
 
-				remainingStates = [...states];
+				remainingStates = [...features];
+				states = features;
 
 				mapSvg
 					.append("g")
@@ -598,32 +694,111 @@
 					})
 					.filter(Boolean);
 
-				capitalsLayer = mapSvg.append("g").attr("class", "capitals");
-				capitalsLayer
-					.selectAll("circle")
-					.data(capitalPoints)
-					.join("circle")
-					.attr("r", 4)
-					.attr("cx", (d) => d.coords[0])
-					.attr("cy", (d) => d.coords[1])
-					.each(function (d) {
-						d.state.__capitalPoint = this;
-					});
+				if (capitalPoints.length) {
+					capitalsLayer = mapSvg.append("g").attr("class", "capitals");
+					capitalsLayer
+						.selectAll("circle")
+						.data(capitalPoints)
+						.join("circle")
+						.attr("r", 4)
+						.attr("cx", (d) => d.coords[0])
+						.attr("cy", (d) => d.coords[1]);
+				}
 
 				pickNextState();
+			};
+
+			const loadRegionData = () => {
+				promptEl.textContent = "Loading map…";
+				if (region === "us") {
+					fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json")
+						.then((response) => response.json())
+						.then((topology) => {
+							const geoData = topojson.feature(
+								topology,
+								topology.objects.states
+							);
+							const projection = d3.geoAlbersUsa().fitSize(
+								[975, 610],
+								geoData
+							);
+
+							const features = geoData.features
+								.map((feature) => {
+									const fips = String(feature.id).padStart(2, "0");
+									const stateName = fipsToName[fips] || "Unknown";
+									const capitalInfo = capitalByState[stateName];
+									return {
+										...feature,
+										properties: {
+											...feature.properties,
+											name: stateName,
+											capital: capitalInfo?.capital || null,
+											capitalCoords: capitalInfo
+												? [capitalInfo.lon, capitalInfo.lat]
+												: null
+										}
+									};
+								})
+								.filter((feature) => feature.properties.name !== "Unknown");
+
+							buildMap(features, projection);
+						})
+						.catch(() => {
+							promptEl.textContent = "Failed to load map data.";
+						});
+					return;
+				}
+
+				fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json")
+					.then((response) => response.json())
+					.then((topology) => {
+						const geoData = topojson.feature(
+							topology,
+							topology.objects.countries
+						);
+						const europeFeatures = geoData.features
+							.map((feature) => {
+								const name = feature.properties?.name || "";
+								const capitalInfo = europeCapitalByCountry[name];
+								return {
+									...feature,
+									properties: {
+										...feature.properties,
+										name,
+										capital: capitalInfo?.capital || null,
+										capitalCoords: capitalInfo
+											? [capitalInfo.lon, capitalInfo.lat]
+											: null
+									}
+								};
+							})
+							.filter((feature) => isEuropeCountry(feature.properties.name))
+							.map(filterOverseasFrance)
+							.map(filterSvalbard)
+							.map(filterToEuropeBounds)
+							.filter(Boolean);
+
+						const projection = d3.geoMercator().fitSize(
+							[975, 610],
+							{ type: "FeatureCollection", features: europeFeatures }
+						);
+
+						buildMap(europeFeatures, projection);
+					})
+					.catch(() => {
+						promptEl.textContent = "Failed to load map data.";
+					});
 			};
 
 			quizStateBtn.addEventListener("click", () => setQuizType("state"));
 			quizCapitalBtn.addEventListener("click", () => setQuizType("capital"));
 			modeChoiceBtn.addEventListener("click", () => setMode("choice"));
 			modeClickBtn.addEventListener("click", () => setMode("click"));
+			regionUsBtn.addEventListener("click", () => setRegion("us"));
+			regionEuBtn.addEventListener("click", () => setRegion("eu"));
 
-			fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json")
-				.then((response) => response.json())
-				.then(drawMap)
-				.catch(() => {
-					promptEl.textContent = "Failed to load map data.";
-				});
+			loadRegionData();
 		</script>
 	</body>
 </html>

@@ -1,0 +1,208 @@
+:root {
+	color-scheme: light;
+	font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+	margin: 0;
+	background: #f5f7fb;
+	color: #1f2937;
+	display: flex;
+	justify-content: center;
+	min-height: 100vh;
+}
+
+.container {
+	width: min(1100px, 96vw);
+	padding: 24px 20px 36px;
+}
+
+header {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin-bottom: 16px;
+}
+
+h1 {
+	margin: 0;
+	font-size: 1.9rem;
+}
+
+.mode-toggle {
+	display: inline-flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.region-toggle {
+	display: inline-flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.mode-toggle button {
+	background: #e2e8f0;
+	color: #1f2937;
+	border: 1px solid transparent;
+}
+
+.mode-toggle button.active {
+	background: #2563eb;
+	color: #ffffff;
+}
+
+.region-toggle button {
+	background: #e2e8f0;
+	color: #1f2937;
+	border: 1px solid transparent;
+}
+
+.region-toggle button.active {
+	background: #2563eb;
+	color: #ffffff;
+}
+
+.quiz-toggle {
+	display: inline-flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.quiz-toggle button {
+	background: #e2e8f0;
+	color: #1f2937;
+	border: 1px solid transparent;
+}
+
+.quiz-toggle button.active {
+	background: #2563eb;
+	color: #ffffff;
+}
+
+.card {
+	background: #ffffff;
+	border-radius: 16px;
+	box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+#map {
+	width: 100%;
+	height: auto;
+}
+
+.states path {
+	fill: #dce3ee;
+	stroke: #ffffff;
+	stroke-width: 1;
+}
+
+.states path.highlight {
+	fill: #f97316;
+}
+
+.states path.correct {
+	fill: #22c55e;
+}
+
+.states path.wrong {
+	fill: #ef4444;
+}
+
+.capitals circle {
+	fill: #94a3b8;
+	opacity: 0.5;
+}
+
+.capitals circle.active {
+	fill: #f97316;
+	opacity: 1;
+}
+
+.capitals circle.correct {
+	fill: #166534;
+	opacity: 1;
+}
+
+.capitals circle.wrong {
+	fill: #7f1d1d;
+	opacity: 1;
+}
+
+.question {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+.question p {
+	margin: 0;
+	font-size: 1.1rem;
+}
+
+.input-row {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.choices {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+	gap: 10px;
+}
+
+.state-label {
+	display: flex;
+	justify-content: center;
+}
+
+button {
+	border: none;
+	padding: 10px 16px;
+	border-radius: 10px;
+	background: #2563eb;
+	color: #ffffff;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+button.secondary {
+	background: #e2e8f0;
+	color: #1f2937;
+}
+
+button.choice {
+	background: #f8fafc;
+	color: #1f2937;
+	border: 1px solid #cbd5f5;
+}
+
+button.display-only {
+	cursor: default;
+	pointer-events: none;
+}
+
+button.choice:hover {
+	background: #e2e8f0;
+}
+
+.feedback {
+	min-height: 24px;
+	font-weight: 600;
+}
+
+.score {
+	font-size: 0.95rem;
+	color: #475569;
+}
+
+@media (max-width: 900px) {
+	.container {
+		padding: 20px 16px 32px;
+	}
+}
