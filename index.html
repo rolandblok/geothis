@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Guess the State</title>
+		<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+		<script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+		<style>
+			:root {
+				color-scheme: light;
+				font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+			}
+
+			body {
+				margin: 0;
+				background: #f5f7fb;
+				color: #1f2937;
+				display: flex;
+				justify-content: center;
+				min-height: 100vh;
+			}
+
+			.container {
+				width: min(1100px, 96vw);
+				padding: 24px 20px 36px;
+			}
+
+			header {
+				display: flex;
+				flex-direction: column;
+				gap: 8px;
+				margin-bottom: 16px;
+			}
+
+			h1 {
+				margin: 0;
+				font-size: 1.9rem;
+			}
+
+			.mode-toggle {
+				display: inline-flex;
+				gap: 8px;
+				flex-wrap: wrap;
+			}
+
+			.mode-toggle button {
+				background: #e2e8f0;
+				color: #1f2937;
+				border: 1px solid transparent;
+			}
+
+			.mode-toggle button.active {
+				background: #2563eb;
+				color: #ffffff;
+			}
+
+			.quiz-toggle {
+				display: inline-flex;
+				gap: 8px;
+				flex-wrap: wrap;
+			}
+
+			.quiz-toggle button {
+				background: #e2e8f0;
+				color: #1f2937;
+				border: 1px solid transparent;
+			}
+
+			.quiz-toggle button.active {
+				background: #2563eb;
+				color: #ffffff;
+			}
+
+			.card {
+				background: #ffffff;
+				border-radius: 16px;
+				box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+				padding: 20px;
+				display: flex;
+				flex-direction: column;
+				gap: 20px;
+			}
+
+			#map {
+				width: 100%;
+				height: auto;
+			}
+
+			.states path {
+				fill: #dce3ee;
+				stroke: #ffffff;
+				stroke-width: 1;
+			}
+
+			.states path.highlight {
+				fill: #f97316;
+			}
+
+			.states path.correct {
+				fill: #22c55e;
+			}
+
+			.states path.wrong {
+				fill: #ef4444;
+			}
+
+			.capitals circle {
+				fill: #94a3b8;
+				opacity: 0.5;
+			}
+
+			.capitals circle.active {
+				fill: #f97316;
+				opacity: 1;
+			}
+
+			.question {
+				display: flex;
+				flex-direction: column;
+				gap: 14px;
+			}
+
+			.question p {
+				margin: 0;
+				font-size: 1.1rem;
+			}
+
+			.input-row {
+				display: flex;
+				gap: 8px;
+				flex-wrap: wrap;
+			}
+
+			.choices {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+				gap: 10px;
+			}
+
+			.state-label {
+				display: flex;
+				justify-content: center;
+			}
+
+			button {
+				border: none;
+				padding: 10px 16px;
+				border-radius: 10px;
+				background: #2563eb;
+				color: #ffffff;
+				font-weight: 600;
+				cursor: pointer;
+			}
+
+			button.secondary {
+				background: #e2e8f0;
+				color: #1f2937;
+			}
+
+			button.choice {
+				background: #f8fafc;
+				color: #1f2937;
+				border: 1px solid #cbd5f5;
+			}
+
+			button.display-only {
+				cursor: default;
+				pointer-events: none;
+			}
+
+			button.choice:hover {
+				background: #e2e8f0;
+			}
+
+			.feedback {
+				min-height: 24px;
+				font-weight: 600;
+			}
+
+			.score {
+				font-size: 0.95rem;
+				color: #475569;
+			}
+
+			@media (max-width: 900px) {
+				.container {
+					padding: 20px 16px 32px;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<header>
+				<h1>Guess the Highlighted State</h1>
+				<div class="score">Score: <span id="score">0</span> | Question: <span id="question-count">0</span></div>
+				<div class="quiz-toggle" role="group" aria-label="Question type">
+					<button id="quiz-state" class="active" type="button">States</button>
+					<button id="quiz-capital" type="button">Capitals</button>
+				</div>
+				<div class="mode-toggle" role="group" aria-label="Game mode">
+					<button id="mode-choice" class="active" type="button">Multiple choice</button>
+					<button id="mode-click" type="button">Click on map</button>
+				</div>
+			</header>
+
+			<section class="card">
+				<svg id="map" viewBox="0 0 975 610" aria-label="Map of the United States"></svg>
+				<div class="question">
+					<p id="prompt">Loading map…</p>
+					<div id="state-label" class="state-label" hidden>
+						<button type="button" class="choice display-only"></button>
+					</div>
+					<div id="choices" class="choices"></div>
+					<div class="feedback" id="feedback"></div>
+				</div>
+			</section>
+		</div>
+
+		<script>
+			const mapSvg = d3.select("#map");
+			const promptEl = document.getElementById("prompt");
+			const stateLabelEl = document.getElementById("state-label");
+			const stateLabelButton = stateLabelEl.querySelector("button");
+			const choicesEl = document.getElementById("choices");
+			const quizStateBtn = document.getElementById("quiz-state");
+			const quizCapitalBtn = document.getElementById("quiz-capital");
+			const modeChoiceBtn = document.getElementById("mode-choice");
+			const modeClickBtn = document.getElementById("mode-click");
+			const feedbackEl = document.getElementById("feedback");
+			const scoreEl = document.getElementById("score");
+			const questionCountEl = document.getElementById("question-count");
+
+			const fipsToName = {
+				"01": "Alabama",
+				"02": "Alaska",
+				"04": "Arizona",
+				"05": "Arkansas",
+				"06": "California",
+				"08": "Colorado",
+				"09": "Connecticut",
+				"10": "Delaware",
+				"11": "District of Columbia",
+				"12": "Florida",
+				"13": "Georgia",
+				"15": "Hawaii",
+				"16": "Idaho",
+				"17": "Illinois",
+				"18": "Indiana",
+				"19": "Iowa",
+				"20": "Kansas",
+				"21": "Kentucky",
+				"22": "Louisiana",
+				"23": "Maine",
+				"24": "Maryland",
+				"25": "Massachusetts",
+				"26": "Michigan",
+				"27": "Minnesota",
+				"28": "Mississippi",
+				"29": "Missouri",
+				"30": "Montana",
+				"31": "Nebraska",
+				"32": "Nevada",
+				"33": "New Hampshire",
+				"34": "New Jersey",
+				"35": "New Mexico",
+				"36": "New York",
+				"37": "North Carolina",
+				"38": "North Dakota",
+				"39": "Ohio",
+				"40": "Oklahoma",
+				"41": "Oregon",
+				"42": "Pennsylvania",
+				"44": "Rhode Island",
+				"45": "South Carolina",
+				"46": "South Dakota",
+				"47": "Tennessee",
+				"48": "Texas",
+				"49": "Utah",
+				"50": "Vermont",
+				"51": "Virginia",
+				"53": "Washington",
+				"54": "West Virginia",
+				"55": "Wisconsin",
+				"56": "Wyoming"
+			};
+
+			const capitalByState = {
+				Alabama: { capital: "Montgomery", lat: 32.377716, lon: -86.300568 },
+				Alaska: { capital: "Juneau", lat: 58.301598, lon: -134.420212 },
+				Arizona: { capital: "Phoenix", lat: 33.448143, lon: -112.096962 },
+				Arkansas: { capital: "Little Rock", lat: 34.746613, lon: -92.288986 },
+				California: { capital: "Sacramento", lat: 38.576668, lon: -121.493629 },
+				Colorado: { capital: "Denver", lat: 39.739227, lon: -104.984856 },
+				Connecticut: { capital: "Hartford", lat: 41.764046, lon: -72.682198 },
+				Delaware: { capital: "Dover", lat: 39.157307, lon: -75.519722 },
+				"District of Columbia": { capital: "Washington", lat: 38.9072, lon: -77.0369 },
+				Florida: { capital: "Tallahassee", lat: 30.438118, lon: -84.281296 },
+				Georgia: { capital: "Atlanta", lat: 33.749027, lon: -84.388229 },
+				Hawaii: { capital: "Honolulu", lat: 21.307442, lon: -157.857376 },
+				Idaho: { capital: "Boise", lat: 43.617775, lon: -116.199722 },
+				Illinois: { capital: "Springfield", lat: 39.798363, lon: -89.654961 },
+				Indiana: { capital: "Indianapolis", lat: 39.768623, lon: -86.162643 },
+				Iowa: { capital: "Des Moines", lat: 41.591087, lon: -93.603729 },
+				Kansas: { capital: "Topeka", lat: 39.048191, lon: -95.677956 },
+				Kentucky: { capital: "Frankfort", lat: 38.186722, lon: -84.875374 },
+				Louisiana: { capital: "Baton Rouge", lat: 30.457069, lon: -91.187393 },
+				Maine: { capital: "Augusta", lat: 44.307167, lon: -69.781693 },
+				Maryland: { capital: "Annapolis", lat: 38.978764, lon: -76.490936 },
+				Massachusetts: { capital: "Boston", lat: 42.358162, lon: -71.063698 },
+				Michigan: { capital: "Lansing", lat: 42.733635, lon: -84.555328 },
+				Minnesota: { capital: "Saint Paul", lat: 44.955097, lon: -93.102211 },
+				Mississippi: { capital: "Jackson", lat: 32.303848, lon: -90.182106 },
+				Missouri: { capital: "Jefferson City", lat: 38.579201, lon: -92.172935 },
+				Montana: { capital: "Helena", lat: 46.585709, lon: -112.018417 },
+				Nebraska: { capital: "Lincoln", lat: 40.808075, lon: -96.699654 },
+				Nevada: { capital: "Carson City", lat: 39.163914, lon: -119.766121 },
+				"New Hampshire": { capital: "Concord", lat: 43.206898, lon: -71.537994 },
+				"New Jersey": { capital: "Trenton", lat: 40.22039, lon: -74.7643 },
+				"New Mexico": { capital: "Santa Fe", lat: 35.68224, lon: -105.939728 },
+				"New York": { capital: "Albany", lat: 42.652843, lon: -73.757874 },
+				"North Carolina": { capital: "Raleigh", lat: 35.78043, lon: -78.639099 },
+				"North Dakota": { capital: "Bismarck", lat: 46.82085, lon: -100.783318 },
+				Ohio: { capital: "Columbus", lat: 39.961346, lon: -82.999069 },
+				Oklahoma: { capital: "Oklahoma City", lat: 35.492207, lon: -97.503342 },
+				Oregon: { capital: "Salem", lat: 44.938461, lon: -123.030403 },
+				Pennsylvania: { capital: "Harrisburg", lat: 40.264378, lon: -76.883598 },
+				"Rhode Island": { capital: "Providence", lat: 41.830914, lon: -71.414963 },
+				"South Carolina": { capital: "Columbia", lat: 34.000343, lon: -81.033211 },
+				"South Dakota": { capital: "Pierre", lat: 44.367031, lon: -100.346405 },
+				Tennessee: { capital: "Nashville", lat: 36.16581, lon: -86.784241 },
+				Texas: { capital: "Austin", lat: 30.27467, lon: -97.740349 },
+				Utah: { capital: "Salt Lake City", lat: 40.777477, lon: -111.888237 },
+				Vermont: { capital: "Montpelier", lat: 44.262436, lon: -72.580536 },
+				Virginia: { capital: "Richmond", lat: 37.538857, lon: -77.43364 },
+				Washington: { capital: "Olympia", lat: 47.035805, lon: -122.905014 },
+				"West Virginia": { capital: "Charleston", lat: 38.336246, lon: -81.612328 },
+				Wisconsin: { capital: "Madison", lat: 43.074684, lon: -89.384445 },
+				Wyoming: { capital: "Cheyenne", lat: 41.140259, lon: -104.820236 }
+			};
+
+			let states = [];
+			let remainingStates = [];
+			let currentState = null;
+			let score = 0;
+			let questionCount = 0;
+			let isLocked = false;
+			let mode = "choice";
+			let quizType = "state";
+			let capitalsLayer = null;
+
+			const normalize = (value) => value.trim().toLowerCase();
+
+			const shuffle = (array) => {
+				for (let index = array.length - 1; index > 0; index -= 1) {
+					const swapIndex = Math.floor(Math.random() * (index + 1));
+					[array[index], array[swapIndex]] = [array[swapIndex], array[index]];
+				}
+				return array;
+			};
+
+			const getAnswerLabel = (state) =>
+				quizType === "capital"
+					? state.properties.capital
+					: state.properties.name;
+
+			const buildChoices = () => {
+				if (!currentState) return [];
+				const correctName = getAnswerLabel(currentState);
+				const pool = states
+					.filter((state) => state !== currentState)
+					.map((state) => getAnswerLabel(state));
+				shuffle(pool);
+				const options = [correctName, ...pool.slice(0, 4)];
+				return shuffle(options);
+			};
+
+			const renderChoices = () => {
+				if (mode !== "choice") {
+					choicesEl.innerHTML = "";
+					choicesEl.style.display = "none";
+					return;
+				}
+				choicesEl.style.display = "grid";
+				choicesEl.innerHTML = "";
+				const options = buildChoices();
+				options.forEach((option) => {
+					const button = document.createElement("button");
+					button.type = "button";
+					button.className = "choice";
+					button.textContent = option;
+					button.addEventListener("click", () => checkAnswer(option));
+					choicesEl.appendChild(button);
+				});
+			};
+
+			const setInteraction = (enabled) => {
+				choicesEl.querySelectorAll("button").forEach((button) => {
+					button.disabled = !enabled;
+				});
+				mapSvg.style("pointer-events", enabled ? "auto" : "none");
+				isLocked = !enabled;
+			};
+
+			const setMode = (nextMode) => {
+				mode = nextMode;
+				modeChoiceBtn.classList.toggle("active", mode === "choice");
+				modeClickBtn.classList.toggle("active", mode === "click");
+				resetGame();
+			};
+
+			const setQuizType = (nextType) => {
+				quizType = nextType;
+				quizStateBtn.classList.toggle("active", quizType === "state");
+				quizCapitalBtn.classList.toggle("active", quizType === "capital");
+				resetGame();
+			};
+
+			const resetGame = () => {
+				score = 0;
+				questionCount = 0;
+				scoreEl.textContent = score;
+				questionCountEl.textContent = questionCount;
+				feedbackEl.textContent = "";
+				stateLabelEl.hidden = mode !== "click";
+				stateLabelEl.style.display = mode === "click" ? "flex" : "none";
+				if (mode !== "click") {
+					stateLabelButton.textContent = "";
+				}
+				remainingStates = [...states];
+				mapSvg
+					.selectAll("path")
+					.classed("correct", false)
+					.classed("wrong", false)
+					.classed("highlight", false);
+				if (capitalsLayer) {
+					capitalsLayer
+						.style(
+							"display",
+							quizType === "capital" && mode === "choice" ? "block" : "none"
+						)
+						.selectAll("circle")
+						.classed("active", false);
+				}
+				pickNextState();
+			};
+
+			const pickNextState = () => {
+				if (!states.length) return;
+				if (!remainingStates.length) {
+					promptEl.textContent = "All states answered!";
+					setInteraction(false);
+					return;
+				}
+				const index = Math.floor(Math.random() * remainingStates.length);
+				const next = remainingStates.splice(index, 1)[0];
+				currentState = next;
+				questionCount += 1;
+				questionCountEl.textContent = questionCount;
+				if (mode === "choice") {
+					promptEl.textContent =
+						quizType === "capital"
+							? "Which capital is highlighted?"
+							: "Which state is highlighted?";
+					stateLabelEl.hidden = true;
+					stateLabelEl.style.display = "none";
+					stateLabelButton.textContent = "";
+				} else {
+					promptEl.textContent = "";
+					stateLabelButton.textContent =
+						quizType === "capital"
+							? currentState.properties.capital
+							: currentState.properties.name;
+					stateLabelEl.hidden = false;
+					stateLabelEl.style.display = "flex";
+				}
+				renderChoices();
+				setInteraction(true);
+
+				mapSvg
+					.selectAll("path")
+					.classed(
+						"highlight",
+						(d) => mode === "choice" && quizType === "state" && d === currentState
+					);
+
+				if (capitalsLayer) {
+					capitalsLayer.style(
+						"display",
+						quizType === "capital" && mode === "choice" ? "block" : "none"
+					);
+					capitalsLayer
+						.selectAll("circle")
+						.classed(
+							"active",
+							(d) =>
+								quizType === "capital" &&
+								mode === "choice" &&
+								d.state === currentState
+						);
+				}
+			};
+
+			const checkAnswer = (selected) => {
+				if (!currentState) return;
+				if (isLocked) return;
+				setInteraction(false);
+				const userAnswer = normalize(selected || "");
+				const correctAnswer = normalize(getAnswerLabel(currentState));
+				const targetPath = mapSvg
+					.selectAll("path")
+					.filter((d) => d === currentState);
+
+				if (userAnswer === correctAnswer) {
+					score += 1;
+					scoreEl.textContent = score;
+					feedbackEl.textContent = "Correct!";
+					targetPath.classed("correct", true).classed("wrong", false);
+					setTimeout(() => pickNextState(), 700);
+				} else {
+					feedbackEl.textContent =
+						quizType === "capital"
+							? `Not quite — it was ${currentState.properties.capital} (${currentState.properties.name}).`
+							: `Not quite — it was ${currentState.properties.name}.`;
+					targetPath.classed("wrong", true).classed("correct", false);
+					setTimeout(() => pickNextState(), 900);
+				}
+			};
+
+			const checkMapAnswer = (clickedState) => {
+				if (!currentState) return;
+				if (isLocked || mode !== "click") return;
+				setInteraction(false);
+				const clickedName = clickedState.properties.name;
+				const correctName = currentState.properties.name;
+				const targetPath = mapSvg
+					.selectAll("path")
+					.filter((d) => d === currentState);
+
+				if (clickedState === currentState) {
+					score += 1;
+					scoreEl.textContent = score;
+					feedbackEl.textContent = "Correct!";
+					targetPath.classed("correct", true).classed("wrong", false);
+					setTimeout(() => pickNextState(), 700);
+				} else {
+					feedbackEl.textContent =
+						quizType === "capital"
+							? `Wrong — you clicked ${clickedName}. It was ${correctName} (capital ${currentState.properties.capital}).`
+							: `Wrong — you clicked ${clickedName}. It was ${correctName}.`;
+					targetPath.classed("wrong", true).classed("correct", false);
+					setTimeout(() => pickNextState(), 900);
+				}
+			};
+
+
+			const drawMap = (topology) => {
+				const geoData = topojson.feature(topology, topology.objects.states);
+				const projection = d3.geoAlbersUsa().fitSize([975, 610], geoData);
+				const path = d3.geoPath(projection);
+
+				states = geoData.features
+					.map((feature) => {
+						const fips = String(feature.id).padStart(2, "0");
+						const stateName = fipsToName[fips] || "Unknown";
+						const capitalInfo = capitalByState[stateName];
+						return {
+							...feature,
+							properties: {
+								...feature.properties,
+								name: stateName,
+								capital: capitalInfo?.capital || null,
+								capitalCoords: capitalInfo ? [capitalInfo.lon, capitalInfo.lat] : null
+							}
+						};
+					})
+					.filter((feature) => feature.properties.name !== "Unknown");
+
+				remainingStates = [...states];
+
+				mapSvg
+					.append("g")
+					.attr("class", "states")
+					.selectAll("path")
+					.data(states)
+					.join("path")
+					.attr("d", path)
+					.attr("aria-label", (d) => d.properties.name)
+					.on("click", (event, d) => checkMapAnswer(d));
+
+				const capitalPoints = states
+					.map((state) => {
+						if (!state.properties.capitalCoords) return null;
+						const projected = projection(state.properties.capitalCoords);
+						if (!projected) return null;
+						return { state, coords: projected };
+					})
+					.filter(Boolean);
+
+				capitalsLayer = mapSvg.append("g").attr("class", "capitals");
+				capitalsLayer
+					.selectAll("circle")
+					.data(capitalPoints)
+					.join("circle")
+					.attr("r", 4)
+					.attr("cx", (d) => d.coords[0])
+					.attr("cy", (d) => d.coords[1])
+					.each(function (d) {
+						d.state.__capitalPoint = this;
+					});
+
+				pickNextState();
+			};
+
+			quizStateBtn.addEventListener("click", () => setQuizType("state"));
+			quizCapitalBtn.addEventListener("click", () => setQuizType("capital"));
+			modeChoiceBtn.addEventListener("click", () => setMode("choice"));
+			modeClickBtn.addEventListener("click", () => setMode("click"));
+
+			fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json")
+				.then((response) => response.json())
+				.then(drawMap)
+				.catch(() => {
+					promptEl.textContent = "Failed to load map data.";
+				});
+		</script>
+	</body>
+</html>
