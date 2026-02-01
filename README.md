@@ -8,8 +8,8 @@ A lightweight browser quiz that helps you learn geography by guessing US states 
 - Capitals mode (US + Europe)
 - Persistent coloring for correct/incorrect answers
 
-## Run locally
-Open index.html in your browser.
+## Run 
+[Open index.html in your browser.](https://raw.githack.com/rolandblok/geothis/master/index.html)
 
 ## Data sources
 - US states: https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json
