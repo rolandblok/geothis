@@ -1,0 +1,40 @@
+{
+	"bounds": {
+		"minLon": -82,
+		"maxLon": -34,
+		"minLat": -56,
+		"maxLat": 13
+	},
+	"countries": [
+		"argentina",
+		"bolivia",
+		"brazil",
+		"chile",
+		"colombia",
+		"ecuador",
+		"guyana",
+		"paraguay",
+		"peru",
+		"suriname",
+		"uruguay",
+		"venezuela"
+	],
+	"microCountries": [
+		"suriname",
+		"guyana"
+	],
+	"capitals": {
+		"Argentina": { "capital": "Buenos Aires", "lat": -34.6037, "lon": -58.3816 },
+		"Bolivia": { "capital": "La Paz", "lat": -16.5000, "lon": -68.1500 },
+		"Brazil": { "capital": "Brasília", "lat": -15.8267, "lon": -47.9218 },
+		"Chile": { "capital": "Santiago", "lat": -33.4489, "lon": -70.6693 },
+		"Colombia": { "capital": "Bogotá", "lat": 4.7110, "lon": -74.0721 },
+		"Ecuador": { "capital": "Quito", "lat": -0.1807, "lon": -78.4678 },
+		"Guyana": { "capital": "Georgetown", "lat": 6.8013, "lon": -58.1551 },
+		"Paraguay": { "capital": "Asunción", "lat": -25.2637, "lon": -57.5759 },
+		"Peru": { "capital": "Lima", "lat": -12.0464, "lon": -77.0428 },
+		"Suriname": { "capital": "Paramaribo", "lat": 5.8520, "lon": -55.2038 },
+		"Uruguay": { "capital": "Montevideo", "lat": -34.9011, "lon": -56.1645 },
+		"Venezuela": { "capital": "Caracas", "lat": 10.4806, "lon": -66.9036 }
+	}
+}

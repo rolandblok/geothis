@@ -10,6 +10,7 @@ const langEnBtn = document.getElementById("lang-en");
 const langNlBtn = document.getElementById("lang-nl");
 const regionUsBtn = document.getElementById("region-us");
 const regionEuBtn = document.getElementById("region-eu");
+const regionSaBtn = document.getElementById("region-sa");
 const regionNlBtn = document.getElementById("region-nl");
 const quizStateBtn = document.getElementById("quiz-state");
 const quizCapitalBtn = document.getElementById("quiz-capital");
@@ -26,6 +27,8 @@ let netherlandsCapitalByProvince = {};
 let netherlandsCapitalByProvinceNormalized = new Map();
 let europeCapitalByCountry = {};
 let europeCountryNames = new Set();
+let southAmericaCapitalByCountry = {};
+let southAmericaCountryNames = new Set();
 let i18nData = {};
 let locale = "en";
 
@@ -115,17 +118,24 @@ const isEuropeCountry = (name) => {
 	);
 };
 
+const isSouthAmericaCountry = (name) => {
+	const normalized = normalize(name);
+	return southAmericaCountryNames.has(normalized);
+};
+
 const loadStaticData = async () => {
 	const [
 		usData,
 		nlCapitals,
 		euData,
+		saData,
 		enTranslations,
 		nlTranslations
 	] = await Promise.all([
 		fetch("data/us-states.json").then((response) => response.json()),
 		fetch("data/netherlands-capitals.json").then((response) => response.json()),
 		fetch("data/europe_countries.json").then((response) => response.json()),
+		fetch("data/south_america_countries.json").then((response) => response.json()),
 		fetch("data/i18n/en.json").then((response) => response.json()),
 		fetch("data/i18n/nl.json").then((response) => response.json())
 	]);
@@ -152,10 +162,24 @@ const loadStaticData = async () => {
 	microCountries = new Set(
 		(microList || []).map((name) => normalize(name))
 	);
+
+	southAmericaCapitalByCountry = saData?.capitals || {};
+	const saCountriesList = saData?.countries || [];
+	const saMicroList = saData?.microCountries || [];
+
+	southAmericaCountryNames = new Set(
+		(saCountriesList || []).map((name) => normalize(name))
+	);
+	const saMicroSet = new Set(
+		(saMicroList || []).map((name) => normalize(name))
+	);
+
 	regionBounds = {
 		...regionBounds,
-		eu: euData?.bounds || null
+		eu: euData?.bounds || null,
+		sa: saData?.bounds || null
 	};
+	microCountries = new Set([...microCountries, ...saMicroSet]);
 	i18nData = {
 		en: enTranslations || {},
 		nl: nlTranslations || {}
@@ -331,6 +355,7 @@ const setRegion = (nextRegion) => {
 	region = nextRegion;
 	regionUsBtn.classList.toggle("active", region === "us");
 	regionEuBtn.classList.toggle("active", region === "eu");
+	regionSaBtn.classList.toggle("active", region === "sa");
 	regionNlBtn.classList.toggle("active", region === "nl");
 	quizCapitalBtn.disabled = false;
 	loadRegionData();
@@ -722,6 +747,33 @@ const loadRegionData = async () => {
 					.filter((feature) => isEuropeCountry(feature.properties.name));
 				return mapped;
 			}
+		},
+		sa: {
+			url: "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json",
+			objectName: "countries",
+			projectionFactory: (featureCollection) =>
+				d3.geoMercator().fitSize([975, 610], featureCollection),
+			bounds: regionBounds.sa,
+			transformFeatures: (features) => {
+				const mapped = features
+					.map((feature) => {
+						const name = feature.properties?.name || "";
+						const capitalInfo = southAmericaCapitalByCountry[name];
+						return {
+							...feature,
+							properties: {
+								...feature.properties,
+								name,
+								capital: capitalInfo?.capital || null,
+								capitalCoords: capitalInfo
+									? [capitalInfo.lon, capitalInfo.lat]
+									: null
+							}
+						};
+					})
+					.filter((feature) => isSouthAmericaCountry(feature.properties.name));
+				return mapped;
+			}
 		}
 	};
 
@@ -756,6 +808,7 @@ modeChoiceBtn.addEventListener("click", () => setMode("choice"));
 modeClickBtn.addEventListener("click", () => setMode("click"));
 regionUsBtn.addEventListener("click", () => setRegion("us"));
 regionEuBtn.addEventListener("click", () => setRegion("eu"));
+regionSaBtn.addEventListener("click", () => setRegion("sa"));
 regionNlBtn.addEventListener("click", () => setRegion("nl"));
 langEnBtn.addEventListener("click", () => {
 	locale = "en";
