@@ -11,6 +11,8 @@ const langNlBtn = document.getElementById("lang-nl");
 const regionUsBtn = document.getElementById("region-us");
 const regionEuBtn = document.getElementById("region-eu");
 const regionSaBtn = document.getElementById("region-sa");
+const regionCaBtn = document.getElementById("region-ca");
+const regionAfBtn = document.getElementById("region-af");
 const regionNlBtn = document.getElementById("region-nl");
 const quizStateBtn = document.getElementById("quiz-state");
 const quizCapitalBtn = document.getElementById("quiz-capital");
@@ -29,6 +31,10 @@ let europeCapitalByCountry = {};
 let europeCountryNames = new Set();
 let southAmericaCapitalByCountry = {};
 let southAmericaCountryNames = new Set();
+let centralAmericaCapitalByCountry = {};
+let centralAmericaCountryNames = new Set();
+let africaCapitalByCountry = {};
+let africaCountryNames = new Set();
 let i18nData = {};
 let locale = "en";
 
@@ -123,12 +129,24 @@ const isSouthAmericaCountry = (name) => {
 	return southAmericaCountryNames.has(normalized);
 };
 
+const isCentralAmericaCountry = (name) => {
+	const normalized = normalize(name);
+	return centralAmericaCountryNames.has(normalized);
+};
+
+const isAfricaCountry = (name) => {
+	const normalized = normalize(name);
+	return africaCountryNames.has(normalized);
+};
+
 const loadStaticData = async () => {
 	const [
 		usData,
 		nlCapitals,
 		euData,
 		saData,
+		caData,
+		afData,
 		enTranslations,
 		nlTranslations
 	] = await Promise.all([
@@ -136,6 +154,8 @@ const loadStaticData = async () => {
 		fetch("data/netherlands-capitals.json").then((response) => response.json()),
 		fetch("data/europe_countries.json").then((response) => response.json()),
 		fetch("data/south_america_countries.json").then((response) => response.json()),
+		fetch("data/central_america_countries.json").then((response) => response.json()),
+		fetch("data/africa_countries.json").then((response) => response.json()),
 		fetch("data/i18n/en.json").then((response) => response.json()),
 		fetch("data/i18n/nl.json").then((response) => response.json())
 	]);
@@ -174,12 +194,36 @@ const loadStaticData = async () => {
 		(saMicroList || []).map((name) => normalize(name))
 	);
 
+	centralAmericaCapitalByCountry = caData?.capitals || {};
+	const caCountriesList = caData?.countries || [];
+	const caMicroList = caData?.microCountries || [];
+
+	centralAmericaCountryNames = new Set(
+		(caCountriesList || []).map((name) => normalize(name))
+	);
+	const caMicroSet = new Set(
+		(caMicroList || []).map((name) => normalize(name))
+	);
+
+	africaCapitalByCountry = afData?.capitals || {};
+	const afCountriesList = afData?.countries || [];
+	const afMicroList = afData?.microCountries || [];
+
+	africaCountryNames = new Set(
+		(afCountriesList || []).map((name) => normalize(name))
+	);
+	const afMicroSet = new Set(
+		(afMicroList || []).map((name) => normalize(name))
+	);
+
 	regionBounds = {
 		...regionBounds,
 		eu: euData?.bounds || null,
-		sa: saData?.bounds || null
+		sa: saData?.bounds || null,
+		ca: caData?.bounds || null,
+		af: afData?.bounds || null
 	};
-	microCountries = new Set([...microCountries, ...saMicroSet]);
+	microCountries = new Set([...microCountries, ...saMicroSet, ...caMicroSet, ...afMicroSet]);
 	i18nData = {
 		en: enTranslations || {},
 		nl: nlTranslations || {}
@@ -356,6 +400,8 @@ const setRegion = (nextRegion) => {
 	regionUsBtn.classList.toggle("active", region === "us");
 	regionEuBtn.classList.toggle("active", region === "eu");
 	regionSaBtn.classList.toggle("active", region === "sa");
+	regionCaBtn.classList.toggle("active", region === "ca");
+	regionAfBtn.classList.toggle("active", region === "af");
 	regionNlBtn.classList.toggle("active", region === "nl");
 	quizCapitalBtn.disabled = false;
 	loadRegionData();
@@ -618,7 +664,7 @@ const buildMap = (features, projection) => {
 	}
 
 	const microSet =
-		region === "eu"
+		region === "eu" || region === "sa" || region === "ca" || region === "af"
 			? microCountries
 			: region === "us"
 				? usMicroStates
@@ -774,6 +820,60 @@ const loadRegionData = async () => {
 					.filter((feature) => isSouthAmericaCountry(feature.properties.name));
 				return mapped;
 			}
+		},
+		ca: {
+			url: "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json",
+			objectName: "countries",
+			projectionFactory: (featureCollection) =>
+				d3.geoMercator().fitSize([975, 610], featureCollection),
+			bounds: regionBounds.ca,
+			transformFeatures: (features) => {
+				const mapped = features
+					.map((feature) => {
+						const name = feature.properties?.name || "";
+						const capitalInfo = centralAmericaCapitalByCountry[name];
+						return {
+							...feature,
+							properties: {
+								...feature.properties,
+								name,
+								capital: capitalInfo?.capital || null,
+								capitalCoords: capitalInfo
+									? [capitalInfo.lon, capitalInfo.lat]
+									: null
+							}
+						};
+					})
+					.filter((feature) => isCentralAmericaCountry(feature.properties.name));
+				return mapped;
+			}
+		},
+		af: {
+			url: "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json",
+			objectName: "countries",
+			projectionFactory: (featureCollection) =>
+				d3.geoMercator().fitSize([975, 610], featureCollection),
+			bounds: regionBounds.af,
+			transformFeatures: (features) => {
+				const mapped = features
+					.map((feature) => {
+						const name = feature.properties?.name || "";
+						const capitalInfo = africaCapitalByCountry[name];
+						return {
+							...feature,
+							properties: {
+								...feature.properties,
+								name,
+								capital: capitalInfo?.capital || null,
+								capitalCoords: capitalInfo
+									? [capitalInfo.lon, capitalInfo.lat]
+									: null
+							}
+						};
+					})
+					.filter((feature) => isAfricaCountry(feature.properties.name));
+				return mapped;
+			}
 		}
 	};
 
@@ -809,6 +909,8 @@ modeClickBtn.addEventListener("click", () => setMode("click"));
 regionUsBtn.addEventListener("click", () => setRegion("us"));
 regionEuBtn.addEventListener("click", () => setRegion("eu"));
 regionSaBtn.addEventListener("click", () => setRegion("sa"));
+regionCaBtn.addEventListener("click", () => setRegion("ca"));
+regionAfBtn.addEventListener("click", () => setRegion("af"));
 regionNlBtn.addEventListener("click", () => setRegion("nl"));
 langEnBtn.addEventListener("click", () => {
 	locale = "en";

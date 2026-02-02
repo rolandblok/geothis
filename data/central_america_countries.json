@@ -1,0 +1,142 @@
+{
+  "bounds": {
+    "minLon": -120,
+    "maxLon": -59,
+    "minLat": 5,
+    "maxLat": 33
+  },
+  "countries": [
+    "Belize",
+    "Costa Rica",
+    "El Salvador",
+    "Guatemala",
+    "Honduras",
+    "Nicaragua",
+    "Panama",
+    "Antigua and Barbuda",
+    "Bahamas",
+    "Barbados",
+    "Cuba",
+    "Dominica",
+    "Dominican Republic",
+    "Grenada",
+    "Haiti",
+    "Jamaica",
+    "Saint Kitts and Nevis",
+    "Saint Lucia",
+    "Saint Vincent and the Grenadines",
+    "Trinidad and Tobago"
+  ],
+  "capitals": {
+    "Belize": {
+      "capital": "Belmopan",
+      "lat": 17.2510,
+      "lon": -88.7590
+    },
+    "Costa Rica": {
+      "capital": "San José",
+      "lat": 9.9281,
+      "lon": -84.0907
+    },
+    "El Salvador": {
+      "capital": "San Salvador",
+      "lat": 13.6929,
+      "lon": -89.2182
+    },
+    "Guatemala": {
+      "capital": "Guatemala City",
+      "lat": 14.6349,
+      "lon": -90.5069
+    },
+    "Honduras": {
+      "capital": "Tegucigalpa",
+      "lat": 14.0723,
+      "lon": -87.1921
+    },
+    "Nicaragua": {
+      "capital": "Managua",
+      "lat": 12.1150,
+      "lon": -86.2362
+    },
+    "Panama": {
+      "capital": "Panama City",
+      "lat": 8.9824,
+      "lon": -79.5199
+    },
+    "Antigua and Barbuda": {
+      "capital": "Saint John's",
+      "lat": 17.1175,
+      "lon": -61.8456
+    },
+    "Bahamas": {
+      "capital": "Nassau",
+      "lat": 25.0443,
+      "lon": -77.3504
+    },
+    "Barbados": {
+      "capital": "Bridgetown",
+      "lat": 13.0969,
+      "lon": -59.6145
+    },
+    "Cuba": {
+      "capital": "Havana",
+      "lat": 23.1136,
+      "lon": -82.3666
+    },
+    "Dominica": {
+      "capital": "Roseau",
+      "lat": 15.3017,
+      "lon": -61.3870
+    },
+    "Dominican Republic": {
+      "capital": "Santo Domingo",
+      "lat": 18.4861,
+      "lon": -69.9312
+    },
+    "Grenada": {
+      "capital": "Saint George's",
+      "lat": 12.0561,
+      "lon": -61.7488
+    },
+    "Haiti": {
+      "capital": "Port-au-Prince",
+      "lat": 18.5944,
+      "lon": -72.3074
+    },
+    "Jamaica": {
+      "capital": "Kingston",
+      "lat": 17.9714,
+      "lon": -76.7931
+    },
+    "Saint Kitts and Nevis": {
+      "capital": "Basseterre",
+      "lat": 17.3026,
+      "lon": -62.7177
+    },
+    "Saint Lucia": {
+      "capital": "Castries",
+      "lat": 14.0101,
+      "lon": -60.9875
+    },
+    "Saint Vincent and the Grenadines": {
+      "capital": "Kingstown",
+      "lat": 13.1579,
+      "lon": -61.2248
+    },
+    "Trinidad and Tobago": {
+      "capital": "Port of Spain",
+      "lat": 10.6596,
+      "lon": -61.5089
+    }
+  },
+  "microCountries": [
+    "Antigua and Barbuda",
+    "Barbados",
+    "Dominica",
+    "Grenada",
+    "Saint Kitts and Nevis",
+    "Saint Lucia",
+    "Saint Vincent and the Grenadines",
+    "Trinidad and Tobago"
+  ]
+}
