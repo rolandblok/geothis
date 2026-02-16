@@ -921,6 +921,13 @@ langNlBtn.addEventListener("click", () => {
 	applyLanguage();
 });
 
+// Handle URL parameters for region selection from intro page
+const urlParams = new URLSearchParams(window.location.search);
+const urlRegion = urlParams.get("region");
+if (urlRegion && ["us", "eu", "sa", "ca", "af", "nl", "asia", "oceania"].includes(urlRegion)) {
+	region = urlRegion;
+}
+
 loadStaticData()
 	.then(() => loadRegionData())
 	.catch(() => {
