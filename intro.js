@@ -3,6 +3,19 @@ let locale = "en";
 let hoveredContinent = null;
 let continentData = [];
 
+// Quiz state
+let quizActive = false;
+let quizMode = 'country'; // 'country' or 'capital'
+let currentContinent = null;
+let continentCountries = [];
+let remainingCountries = [];
+let currentCountry = null;
+let score = 0;
+let questionCount = 0;
+let answeredCountries = new Set();
+let wrongCountries = new Set();
+let capitalData = {}; // Loaded from continent data files
+
 // Translations
 const translations = {
     en: {
@@ -47,7 +60,7 @@ const continentColors = {
     eu: { normal: "rgba(96, 165, 250, 0.7)", hover: "rgba(59, 130, 246, 0.9)" },
     af: { normal: "rgba(251, 191, 36, 0.7)", hover: "rgba(245, 158, 11, 0.9)" },
     asia: { normal: "rgba(244, 114, 182, 0.7)", hover: "rgba(236, 72, 153, 0.9)" },
-    middleeast: { normal: "rgba(239, 68, 68, 0.7)", hover: "rgba(220, 38, 38, 0.9)" },
+    middleeast: { normal: "rgba(217, 119, 6, 0.7)", hover: "rgba(180, 83, 9, 0.9)" },
     oceania: { normal: "rgba(34, 211, 238, 0.7)", hover: "rgba(6, 182, 212, 0.9)" }
 };
 
@@ -59,6 +72,7 @@ const continentDataFiles = {
     eu: "data/europe_countries.json",
     af: "data/africa_countries.json",
     asia: "data/asia_countries.json",
+    middleeast: "data/middleeast_countries.json",
     oceania: "data/oceania_countries.json"
 };
 
@@ -161,6 +175,12 @@ fetch('//cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
 function handlePolygonHover(polygon) {
     hoveredContinent = polygon;
     
+    if (quizActive) {
+        // During quiz, only change cursor
+        document.body.style.cursor = polygon && polygon.properties.continent === currentContinent ? 'pointer' : 'default';
+        return;
+    }
+    
     if (polygon) {
         document.body.style.cursor = 'pointer';
         
@@ -192,52 +212,271 @@ function handlePolygonHover(polygon) {
 
 // Handle polygon click
 async function handlePolygonClick(polygon) {
-    if (polygon && polygon.properties.continent) {
-        const continentCode = polygon.properties.continent;
-        
-        // Stop auto-rotation
-        globe.controls().autoRotate = false;
-        
-        let lat, lng;
-        
-        // Try to load center from JSON data file
-        if (continentDataFiles[continentCode]) {
-            try {
-                const response = await fetch(continentDataFiles[continentCode]);
-                const data = await response.json();
-                
-                if (data.center) {
-                    lat = data.center.lat;
-                    lng = data.center.lon;
-                }
-            } catch (error) {
-                console.warn(`Could not load center for ${continentCode}, using default`);
-            }
-        }
-        
-        // Fall back to default centers if not loaded from file
-        if (lat === undefined || lng === undefined) {
-            if (defaultCenters[continentCode]) {
-                lat = defaultCenters[continentCode].lat;
-                lng = defaultCenters[continentCode].lon;
-            } else {
-                // Last resort: calculate from polygon
-                const coords = polygon.geometry.coordinates;
-                if (polygon.geometry.type === 'Polygon') {
-                    const points = coords[0];
-                    lng = points.reduce((sum, p) => sum + p[0], 0) / points.length;
-                    lat = points.reduce((sum, p) => sum + p[1], 0) / points.length;
-                } else if (polygon.geometry.type === 'MultiPolygon') {
-                    const allPoints = coords.flat(2);
-                    lng = allPoints.filter((_, i) => i % 2 === 0).reduce((sum, p) => sum + p, 0) / (allPoints.length / 2);
-                    lat = allPoints.filter((_, i) => i % 2 === 1).reduce((sum, p) => sum + p, 0) / (allPoints.length / 2);
-                }
-            }
-        }
-        
-        // Center the globe on the clicked continent
-        globe.pointOfView({ lat, lng, altitude: 1.8 }, 1000);
+    if (quizActive && polygon && polygon.properties.continent === currentContinent) {
+        // Quiz mode - check answer
+        checkAnswer(polygon);
+        return;
     }
+    
+    if (!quizActive && polygon && polygon.properties.continent) {
+        // Show quiz type chooser
+        showQuizChooser(polygon.properties.continent);
+    }
+}
+
+// Show quiz type chooser
+function showQuizChooser(continentCode) {
+    currentContinent = continentCode;
+    const chooser = document.getElementById('quizChooser');
+    document.getElementById('chooserTitle').textContent = continentNames[continentCode];
+    chooser.classList.remove('hidden');
+    
+    // Stop auto-rotation
+    globe.controls().autoRotate = false;
+    
+    // Center on continent
+    if (defaultCenters[continentCode]) {
+        globe.pointOfView({
+            lat: defaultCenters[continentCode].lat,
+            lng: defaultCenters[continentCode].lon,
+            altitude: 1.5
+        }, 1000);
+    }
+}
+
+// Hide quiz chooser
+function hideQuizChooser() {
+    document.getElementById('quizChooser').classList.add('hidden');
+    currentContinent = null;
+    globe.controls().autoRotate = true;
+    globe.pointOfView({ lat: 20, lng: 0, altitude: 1.8 }, 1000);
+}
+
+// Start quiz for a continent
+async function startQuiz(continentCode, mode) {
+    quizActive = true;
+    quizMode = mode;
+    currentContinent = continentCode;
+    
+    // Hide chooser
+    document.getElementById('quizChooser').classList.add('hidden');
+    
+    // Stop auto-rotation and disable manual rotation
+    globe.controls().autoRotate = false;
+    globe.controls().enableRotate = false;
+    
+    // Load capital data if needed
+    if (mode === 'capital' && continentDataFiles[continentCode]) {
+        try {
+            const response = await fetch(continentDataFiles[continentCode]);
+            const data = await response.json();
+            capitalData = data.capitals || {};
+        } catch (error) {
+            console.error('Error loading capital data:', error);
+            capitalData = {};
+        }
+    }
+    
+    // Get all countries for this continent
+    continentCountries = continentData.filter(d => d.properties.continent === continentCode);
+    
+    // For capital quiz, only include countries that have capitals in the data
+    if (mode === 'capital') {
+        continentCountries = continentCountries.filter(d => capitalData[d.properties.name]);
+    }
+    
+    remainingCountries = [...continentCountries];
+    answeredCountries.clear();
+    wrongCountries.clear();
+    score = 0;
+    questionCount = 0;
+    
+    // Show quiz panel
+    document.getElementById('quizPanel').classList.remove('hidden');
+    const modeLabel = mode === 'capital' ? ' – Capitals' : ' – Countries';
+    document.getElementById('continentTitle').textContent = continentNames[continentCode] + modeLabel;
+    document.getElementById('score').textContent = score;
+    document.getElementById('questionCount').textContent = questionCount;
+    document.getElementById('feedback').textContent = '';
+    document.getElementById('feedback').className = 'feedback';
+    
+    // Center on continent
+    if (defaultCenters[continentCode]) {
+        globe.pointOfView({
+            lat: defaultCenters[continentCode].lat,
+            lng: defaultCenters[continentCode].lon,
+            altitude: 1.5
+        }, 1000);
+    }
+    
+    // Reset all countries to normal state
+    updateGlobeColors();
+    
+    // Show capital dots for capital quiz
+    if (mode === 'capital') {
+        const capitalPoints = continentCountries
+            .filter(d => capitalData[d.properties.name])
+            .map(d => {
+                const cap = capitalData[d.properties.name];
+                return {
+                    lat: cap.lat,
+                    lng: cap.lon,
+                    name: cap.capital,
+                    country: d.properties.name,
+                    size: 0.3,
+                    color: 'rgba(255, 255, 255, 0.9)'
+                };
+            });
+        globe
+            .pointsData(capitalPoints)
+            .pointAltitude(0.02)
+            .pointRadius('size')
+            .pointColor('color')
+            .pointLabel(() => '')
+            .onPointClick(point => {
+                // Find the polygon for this capital's country
+                const polygon = continentCountries.find(d => d.properties.name === point.country);
+                if (polygon) {
+                    checkAnswer(polygon);
+                }
+            });
+    } else {
+        globe.pointsData([]);
+    }
+    
+    // Start first question
+    setTimeout(() => pickNextCountry(), 1000);
+}
+
+// Pick next country to quiz
+function pickNextCountry() {
+    if (remainingCountries.length === 0) {
+        document.getElementById('countryName').textContent = 'Quiz Complete!';
+        document.getElementById('quizPrompt').textContent = `Final Score: ${score}/${questionCount}`;
+        document.getElementById('feedback').textContent = '';
+        return;
+    }
+    
+    const index = Math.floor(Math.random() * remainingCountries.length);
+    currentCountry = remainingCountries[index];
+    
+    questionCount++;
+    document.getElementById('questionCount').textContent = questionCount;
+    
+    if (quizMode === 'capital') {
+        const cap = capitalData[currentCountry.properties.name];
+        document.getElementById('quizPrompt').textContent = 'Which country has the capital:';
+        document.getElementById('countryName').textContent = cap ? cap.capital : currentCountry.properties.name;
+    } else {
+        document.getElementById('quizPrompt').textContent = 'Click on:';
+        document.getElementById('countryName').textContent = currentCountry.properties.name;
+    }
+    document.getElementById('feedback').textContent = '';
+    document.getElementById('feedback').className = 'feedback';
+}
+
+// Check answer
+function checkAnswer(clickedPolygon) {
+    if (!currentCountry) return;
+    
+    const feedbackEl = document.getElementById('feedback');
+    
+    if (clickedPolygon.properties.name === currentCountry.properties.name) {
+        // Correct answer
+        score++;
+        document.getElementById('score').textContent = score;
+        feedbackEl.textContent = '✓ Correct!';
+        feedbackEl.className = 'feedback correct';
+        
+        // Mark as answered
+        answeredCountries.add(currentCountry.properties.name);
+        
+        // Remove from remaining
+        remainingCountries = remainingCountries.filter(c => c !== currentCountry);
+        
+        // Update globe to show answered country
+        updateGlobeColors();
+        
+        // Next question after delay
+        setTimeout(() => pickNextCountry(), 1000);
+    } else {
+        // Wrong answer
+        if (quizMode === 'capital') {
+            const cap = capitalData[currentCountry.properties.name];
+            feedbackEl.textContent = `✗ Wrong! ${cap ? cap.capital : ''} is the capital of ${currentCountry.properties.name}`;
+        } else {
+            feedbackEl.textContent = `✗ Wrong! That was ${clickedPolygon.properties.name}`;
+        }
+        feedbackEl.className = 'feedback wrong';
+        
+        // Mark current country as wrong
+        wrongCountries.add(currentCountry.properties.name);
+        
+        // Remove from remaining
+        remainingCountries = remainingCountries.filter(c => c !== currentCountry);
+        
+        // Update globe to show wrong country dropped and red
+        updateGlobeColors();
+        
+        // Next question after delay
+        setTimeout(() => pickNextCountry(), 3000);
+    }
+}
+
+// Update globe colors based on quiz state
+function updateGlobeColors() {
+    globe.polygonAltitude(d => {
+        if (!d || !d.properties.continent) return 0.01;
+        if (quizActive && d.properties.continent !== currentContinent) return 0.01;
+        if (answeredCountries.has(d.properties.name)) return 0.005; // Lower for correct
+        if (wrongCountries.has(d.properties.name)) return 0.005; // Lower for wrong
+        return 0.01;
+    }).polygonCapColor(d => {
+        const continent = d.properties.continent;
+        if (!continent) return 'rgba(100, 100, 100, 0.3)';
+        
+        if (quizActive) {
+            if (continent !== currentContinent) {
+                // Dim other continents during quiz
+                return 'rgba(100, 100, 100, 0.2)';
+            }
+            
+            // Show answered countries in green
+            if (answeredCountries.has(d.properties.name)) {
+                return 'rgba(34, 197, 94, 0.7)';
+            }
+            
+            // Show wrong countries in red
+            if (wrongCountries.has(d.properties.name)) {
+                return 'rgba(239, 68, 68, 0.7)';
+            }
+            
+            // Active continent countries
+            return continentColors[continent].normal;
+        }
+        
+        return continentColors[continent].normal;
+    });
+}
+
+// Exit quiz
+function exitQuiz() {
+    quizActive = false;
+    currentContinent = null;
+    currentCountry = null;
+    continentCountries = [];
+    remainingCountries = [];
+    answeredCountries.clear();
+    wrongCountries.clear();
+    
+    document.getElementById('quizPanel').classList.add('hidden');
+    
+    // Reset globe
+    globe.controls().autoRotate = true;
+    globe.controls().enableRotate = true;
+    globe.pointOfView({ lat: 20, lng: 0, altitude: 1.8 }, 1000);
+    globe.pointsData([]);
+    updateGlobeColors();
 }
 
 // Handle window resize
@@ -250,4 +489,22 @@ document.getElementById('textureBtn').addEventListener('click', () => {
     currentTextureIndex = (currentTextureIndex + 1) % textures.length;
     globe.globeImageUrl(textures[currentTextureIndex]);
     console.log('Active texture:', textures[currentTextureIndex]);
+});
+
+// Exit quiz button
+document.getElementById('exitQuizBtn').addEventListener('click', () => {
+    exitQuiz();
+});
+
+// Quiz chooser buttons
+document.getElementById('chooseCountryQuiz').addEventListener('click', () => {
+    startQuiz(currentContinent, 'country');
+});
+
+document.getElementById('chooseCapitalQuiz').addEventListener('click', () => {
+    startQuiz(currentContinent, 'capital');
+});
+
+document.getElementById('cancelChooser').addEventListener('click', () => {
+    hideQuizChooser();
 });

@@ -1,0 +1,66 @@
+{
+	"bounds": {
+		"minLon": 25,
+		"maxLon": 80,
+		"minLat": 10,
+		"maxLat": 55
+	},
+	"center": {
+		"lat": 30,
+		"lon": 45
+	},
+	"countries": [
+		"turkey",
+		"iran",
+		"saudi arabia",
+		"iraq",
+		"syria",
+		"lebanon",
+		"jordan",
+		"israel",
+		"palestine",
+		"yemen",
+		"oman",
+		"united arab emirates",
+		"kuwait",
+		"bahrain",
+		"qatar",
+		"azerbaijan",
+		"armenia",
+		"georgia",
+		"kazakhstan",
+		"uzbekistan",
+		"turkmenistan",
+		"tajikistan",
+		"kyrgyzstan"
+	],
+	"microCountries": [
+		"bahrain",
+		"lebanon"
+	],
+	"capitals": {
+		"Turkey": { "capital": "Ankara", "lat": 39.9334, "lon": 32.8597 },
+		"Iran": { "capital": "Tehran", "lat": 35.6892, "lon": 51.3890 },
+		"Saudi Arabia": { "capital": "Riyadh", "lat": 24.7136, "lon": 46.6753 },
+		"Iraq": { "capital": "Baghdad", "lat": 33.3152, "lon": 44.3661 },
+		"Syria": { "capital": "Damascus", "lat": 33.5138, "lon": 36.2765 },
+		"Lebanon": { "capital": "Beirut", "lat": 33.8886, "lon": 35.4955 },
+		"Jordan": { "capital": "Amman", "lat": 31.9454, "lon": 35.9284 },
+		"Israel": { "capital": "Jerusalem", "lat": 31.7683, "lon": 35.2137 },
+		"Palestine": { "capital": "Ramallah", "lat": 31.9073, "lon": 35.2034 },
+		"Yemen": { "capital": "Sanaa", "lat": 15.5527, "lon": 44.2075 },
+		"Oman": { "capital": "Muscat", "lat": 23.5880, "lon": 58.3829 },
+		"United Arab Emirates": { "capital": "Abu Dhabi", "lat": 24.4539, "lon": 54.3773 },
+		"Kuwait": { "capital": "Kuwait City", "lat": 29.3759, "lon": 47.9774 },
+		"Bahrain": { "capital": "Manama", "lat": 26.2285, "lon": 50.5860 },
+		"Qatar": { "capital": "Doha", "lat": 25.2854, "lon": 51.5310 },
+		"Azerbaijan": { "capital": "Baku", "lat": 40.4093, "lon": 49.8671 },
+		"Armenia": { "capital": "Yerevan", "lat": 40.1872, "lon": 44.5152 },
+		"Georgia": { "capital": "Tbilisi", "lat": 41.7151, "lon": 44.8271 },
+		"Kazakhstan": { "capital": "Astana", "lat": 51.1694, "lon": 71.4491 },
+		"Uzbekistan": { "capital": "Tashkent", "lat": 41.2995, "lon": 69.2401 },
+		"Turkmenistan": { "capital": "Ashgabat", "lat": 37.9601, "lon": 58.3261 },
+		"Tajikistan": { "capital": "Dushanbe", "lat": 38.5598, "lon": 68.7738 },
+		"Kyrgyzstan": { "capital": "Bishkek", "lat": 42.8746, "lon": 74.5698 }
+	}
+}

@@ -13,6 +13,30 @@
     <div class="intro-container">
         <div class="earth-container" id="globeViz"></div>
         <button id="textureBtn" title="Switch texture">🌍</button>
+        <div id="quizChooser" class="quiz-chooser hidden">
+            <h2 id="chooserTitle"></h2>
+            <p>Choose quiz type:</p>
+            <div class="chooser-buttons">
+                <button id="chooseCountryQuiz" class="chooser-btn">🌍 Country Quiz</button>
+                <button id="chooseCapitalQuiz" class="chooser-btn">🏠 Capital Quiz</button>
+            </div>
+            <button id="cancelChooser" class="chooser-cancel">← Back</button>
+        </div>
+        <div id="quizPanel" class="quiz-panel hidden">
+            <div class="quiz-header">
+                <h2 id="continentTitle"></h2>
+                <button id="exitQuizBtn" title="Exit quiz">✕</button>
+            </div>
+            <div class="quiz-content">
+                <div id="quizPrompt" class="quiz-prompt">Click on:</div>
+                <div id="countryName" class="country-name"></div>
+                <div id="feedback" class="feedback"></div>
+                <div class="quiz-stats">
+                    <span>Score: <span id="score">0</span></span>
+                    <span>Question: <span id="questionCount">0</span></span>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 </html>
