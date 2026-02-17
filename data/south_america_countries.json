@@ -5,6 +5,10 @@
 		"minLat": -56,
 		"maxLat": 13
 	},
+	"center": {
+		"lat": -14,
+		"lon": -58
+	},
 	"countries": [
 		"argentina",
 		"bolivia",

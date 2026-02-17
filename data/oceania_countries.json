@@ -1,0 +1,57 @@
+{
+	"bounds": {
+		"minLon": 110,
+		"maxLon": -175,
+		"minLat": -47,
+		"maxLat": -10
+	},
+	"center": {
+		"lat": -25,
+		"lon": 140
+	},
+	"countries": [
+		"australia",
+		"fiji",
+		"kiribati",
+		"marshall islands",
+		"micronesia",
+		"nauru",
+		"new zealand",
+		"palau",
+		"papua new guinea",
+		"samoa",
+		"solomon islands",
+		"tonga",
+		"tuvalu",
+		"vanuatu"
+	],
+	"microCountries": [
+		"fiji",
+		"kiribati",
+		"marshall islands",
+		"micronesia",
+		"nauru",
+		"palau",
+		"samoa",
+		"solomon islands",
+		"tonga",
+		"tuvalu",
+		"vanuatu"
+	],
+	"capitals": {
+		"Australia": { "capital": "Canberra", "lat": -35.2809, "lon": 149.1300 },
+		"Fiji": { "capital": "Suva", "lat": -18.1416, "lon": 178.4419 },
+		"Kiribati": { "capital": "Tarawa", "lat": 1.3382, "lon": 173.0176 },
+		"Marshall Islands": { "capital": "Majuro", "lat": 7.1315, "lon": 171.1845 },
+		"Micronesia": { "capital": "Palikir", "lat": 6.9248, "lon": 158.1610 },
+		"Nauru": { "capital": "Yaren", "lat": -0.5477, "lon": 166.9209 },
+		"New Zealand": { "capital": "Wellington", "lat": -41.2865, "lon": 174.7762 },
+		"Palau": { "capital": "Ngerulmud", "lat": 7.5007, "lon": 134.6242 },
+		"Papua New Guinea": { "capital": "Port Moresby", "lat": -9.4438, "lon": 147.1803 },
+		"Samoa": { "capital": "Apia", "lat": -13.8506, "lon": -171.7513 },
+		"Solomon Islands": { "capital": "Honiara", "lat": -9.4456, "lon": 159.9729 },
+		"Tonga": { "capital": "Nuku'alofa", "lat": -21.1393, "lon": -175.2018 },
+		"Tuvalu": { "capital": "Funafuti", "lat": -8.5243, "lon": 179.1942 },
+		"Vanuatu": { "capital": "Port Vila", "lat": -17.7333, "lon": 168.3273 }
+	}
+}

@@ -278,6 +278,17 @@ const continentNames = {
     oceania: "Oceania"
 };
 
+// Map continent codes to JSON data files
+const continentDataFiles = {
+    us: "data/north_america_countries.json",
+    ca: "data/central_america_countries.json",
+    sa: "data/south_america_countries.json",
+    eu: "data/europe_countries.json",
+    af: "data/africa_countries.json",
+    asia: "data/asia_countries.json",
+    oceania: "data/oceania_countries.json"
+};
+
 // Texture options
 const textures = [
     '//unpkg.com/three-globe/example/img/earth-blue-marble.jpg',
@@ -385,17 +396,52 @@ function handlePolygonHover(polygon) {
 }
 
 // Handle polygon click
-function handlePolygonClick(polygon) {
+async function handlePolygonClick(polygon) {
     if (polygon && polygon.properties.continent) {
-        const region = polygon.properties.continent;
+        const continentCode = polygon.properties.continent;
         
-        // Add transition effect
-        document.body.style.transition = "opacity 0.5s ease";
-        document.body.style.opacity = "0";
+        // Stop auto-rotation
+        globe.controls().autoRotate = false;
         
-        setTimeout(() => {
-            window.location.href = `index.html?region=${region}`;
-        }, 500);
+        let lat, lng;
+        
+        // Try to load center from JSON data file
+        if (continentDataFiles[continentCode]) {
+            try {
+                const response = await fetch(continentDataFiles[continentCode]);
+                const data = await response.json();
+                
+                if (data.center) {
+                    lat = data.center.lat;
+                    lng = data.center.lon;
+                }
+            } catch (error) {
+                console.warn(`Could not load center for ${continentCode}, using default`);
+            }
+        }
+        
+        // Fall back to default centers if not loaded from file
+        if (lat === undefined || lng === undefined) {
+            if (defaultCenters[continentCode]) {
+                lat = defaultCenters[continentCode].lat;
+                lng = defaultCenters[continentCode].lon;
+            } else {
+                // Last resort: calculate from polygon
+                const coords = polygon.geometry.coordinates;
+                if (polygon.geometry.type === 'Polygon') {
+                    const points = coords[0];
+                    lng = points.reduce((sum, p) => sum + p[0], 0) / points.length;
+                    lat = points.reduce((sum, p) => sum + p[1], 0) / points.length;
+                } else if (polygon.geometry.type === 'MultiPolygon') {
+                    const allPoints = coords.flat(2);
+                    lng = allPoints.filter((_, i) => i % 2 === 0).reduce((sum, p) => sum + p, 0) / (allPoints.length / 2);
+                    lat = allPoints.filter((_, i) => i % 2 === 1).reduce((sum, p) => sum + p, 0) / (allPoints.length / 2);
+                }
+            }
+        }
+        
+        // Center the globe on the clicked continent
+        globe.pointOfView({ lat, lng, altitude: 1.8 }, 1000);
     }
 }
 

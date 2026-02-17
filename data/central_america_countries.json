@@ -5,6 +5,10 @@
     "minLat": 5,
     "maxLat": 33
   },
+  "center": {
+    "lat": 19,
+    "lon": -89.5
+  },
   "countries": [
     "Belize",
     "Costa Rica",

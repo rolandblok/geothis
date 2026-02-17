@@ -5,6 +5,10 @@
 		"minLat": -35,
 		"maxLat": 38
 	},
+	"center": {
+		"lat": 1.5,
+		"lon": 17
+	},
 	"countries": [
 		"algeria",
 		"angola",

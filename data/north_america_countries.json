@@ -1,0 +1,36 @@
+{
+	"bounds": {
+		"minLon": -170,
+		"maxLon": -52,
+		"minLat": 15,
+		"maxLat": 72
+	},
+	"center": {
+		"lat": 45,
+		"lon": -100
+	},
+	"countries": [
+		"canada",
+		"united states",
+		"united states of america",
+		"mexico",
+		"greenland"
+	],
+	"capitals": {
+		"Canada": {
+			"capital": "Ottawa",
+			"lat": 45.4215,
+			"lon": -75.6972
+		},
+		"United States": {
+			"capital": "Washington, D.C.",
+			"lat": 38.9072,
+			"lon": -77.0369
+		},
+		"Mexico": {
+			"capital": "Mexico City",
+			"lat": 19.4326,
+			"lon": -99.1332
+		}
+	}
+}

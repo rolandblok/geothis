@@ -5,6 +5,10 @@
 		"minLat": 34,
 		"maxLat": 72
 	},
+	"center": {
+		"lat": 53,
+		"lon": 12.5
+	},
 	"countries": [
 		"albania",
 		"andorra",
