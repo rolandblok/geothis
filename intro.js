@@ -15,6 +15,7 @@ const translations = {
         Europe: "Europe",
         Africa: "Africa",
         Asia: "Asia",
+        "Middle East": "Middle East",
         Oceania: "Oceania"
     },
     nl: {
@@ -27,6 +28,7 @@ const translations = {
         Europe: "Europa",
         Africa: "Afrika",
         Asia: "Azië",
+        "Middle East": "Midden-Oosten",
         Oceania: "Oceanië"
     }
 };
@@ -39,24 +41,37 @@ let countryToContinentMap = {};
 let continentNames = {};
 
 const continentColors = {
-    us: { normal: "rgba(74, 222, 128, 0.7)", hover: "rgba(34, 197, 94, 0.9)" },
+    na: { normal: "rgba(74, 222, 128, 0.7)", hover: "rgba(34, 197, 94, 0.9)" },
     ca: { normal: "rgba(251, 146, 60, 0.7)", hover: "rgba(249, 115, 22, 0.9)" },
     sa: { normal: "rgba(168, 85, 247, 0.7)", hover: "rgba(147, 51, 234, 0.9)" },
     eu: { normal: "rgba(96, 165, 250, 0.7)", hover: "rgba(59, 130, 246, 0.9)" },
     af: { normal: "rgba(251, 191, 36, 0.7)", hover: "rgba(245, 158, 11, 0.9)" },
     asia: { normal: "rgba(244, 114, 182, 0.7)", hover: "rgba(236, 72, 153, 0.9)" },
+    middleeast: { normal: "rgba(239, 68, 68, 0.7)", hover: "rgba(220, 38, 38, 0.9)" },
     oceania: { normal: "rgba(34, 211, 238, 0.7)", hover: "rgba(6, 182, 212, 0.9)" }
 };
 
 // Map continent codes to JSON data files
 const continentDataFiles = {
-    us: "data/north_america_countries.json",
+    na: "data/north_america_countries.json",
     ca: "data/central_america_countries.json",
     sa: "data/south_america_countries.json",
     eu: "data/europe_countries.json",
     af: "data/africa_countries.json",
     asia: "data/asia_countries.json",
     oceania: "data/oceania_countries.json"
+};
+
+// Default centers for continents
+const defaultCenters = {
+    na: { lat: 40, lon: -100 },
+    ca: { lat: 15, lon: -85 },
+    sa: { lat: -15, lon: -60 },
+    eu: { lat: 50, lon: 15 },
+    af: { lat: 0, lon: 20 },
+    asia: { lat: 30, lon: 100 },
+    middleeast: { lat: 30, lon: 45 },
+    oceania: { lat: -25, lon: 135 }
 };
 
 // Texture options
