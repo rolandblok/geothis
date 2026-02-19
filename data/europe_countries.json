@@ -6,9 +6,10 @@
 		"maxLat": 72
 	},
 	"center": {
-		"lat": 53,
-		"lon": 12.5
+		"lat": 47,
+		"lon": 10.5
 	},
+	"zoom": 0.85,
 	"countries": [
 		"albania",
 		"andorra",

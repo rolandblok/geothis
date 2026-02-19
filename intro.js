@@ -53,16 +53,19 @@ const t = (key) => translations[locale][key] || translations.en[key] || key;
 let countryToContinentMap = {};
 let continentNames = {};
 
-const continentColors = {
-    na: { normal: "rgba(74, 222, 128, 0.7)", hover: "rgba(34, 197, 94, 0.9)" },
-    ca: { normal: "rgba(251, 146, 60, 0.7)", hover: "rgba(249, 115, 22, 0.9)" },
-    sa: { normal: "rgba(168, 85, 247, 0.7)", hover: "rgba(147, 51, 234, 0.9)" },
-    eu: { normal: "rgba(96, 165, 250, 0.7)", hover: "rgba(59, 130, 246, 0.9)" },
-    af: { normal: "rgba(251, 191, 36, 0.7)", hover: "rgba(245, 158, 11, 0.9)" },
-    asia: { normal: "rgba(244, 114, 182, 0.7)", hover: "rgba(236, 72, 153, 0.9)" },
-    middleeast: { normal: "rgba(217, 119, 6, 0.7)", hover: "rgba(180, 83, 9, 0.9)" },
-    oceania: { normal: "rgba(34, 211, 238, 0.7)", hover: "rgba(6, 182, 212, 0.9)" }
-};
+// Continent colors – loaded from data/settings.json
+let continentColors = {};
+let borders = { strokeColor: 'rgba(255,255,255,1)', sideColor: 'rgba(0,100,200,0.15)' };
+let backgroundColor = 'rgba(15, 23, 42, 1)';
+
+fetch('data/settings.json')
+    .then(res => res.json())
+    .then(data => {
+        continentColors = data.continentColors;
+        if (data.borders) borders = data.borders;
+        if (data.backgroundColor) backgroundColor = data.backgroundColor;
+    })
+    .catch(error => console.error('Error loading settings:', error));
 
 // Map continent codes to JSON data files
 const continentDataFiles = {
@@ -88,6 +91,23 @@ const defaultCenters = {
     oceania: { lat: -25, lon: 135 }
 };
 
+// Zoom levels per continent, loaded from JSON
+const continentZoom = {};
+const defaultZoom = 1.5;
+
+// Pre-load center and zoom levels from all continent data files
+Promise.all(
+    Object.entries(continentDataFiles).map(([code, file]) =>
+        fetch(file)
+            .then(res => res.json())
+            .then(data => {
+                if (data.center !== undefined) defaultCenters[code] = { lat: data.center.lat, lon: data.center.lon };
+                if (data.zoom !== undefined) continentZoom[code] = data.zoom;
+            })
+            .catch(() => {})
+    )
+);
+
 // Texture options
 const textures = [
     '//unpkg.com/three-globe/example/img/earth-blue-marble.jpg',
@@ -102,7 +122,7 @@ let currentTextureIndex = 2; // Start with earth-day
 const globe = Globe()
     (document.getElementById('globeViz'))
     .globeImageUrl(textures[currentTextureIndex])
-    .backgroundColor('#0f172a')
+    .backgroundColor(backgroundColor)
     .atmosphereColor('#3b82f6')
     .atmosphereAltitude(0.15)
     .width(window.innerWidth)
@@ -151,8 +171,8 @@ fetch('//cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
                 const isHovered = hoveredContinent && hoveredContinent.properties.continent === continent;
                 return isHovered ? continentColors[continent].hover : continentColors[continent].normal;
             })
-            .polygonSideColor(() => 'rgba(0, 100, 200, 0.15)')
-            .polygonStrokeColor(() => 'rgba(50, 50, 50, 0.8)')
+            .polygonSideColor(() => borders.sideColor)
+            .polygonStrokeColor(() => borders.strokeColor)
             .polygonLabel(d => {
                 const continent = d.properties.continent;
                 if (!continent) return '';
@@ -165,7 +185,7 @@ fetch('//cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
         // Auto-rotate
         globe.controls().autoRotate = true;
         globe.controls().autoRotateSpeed = 0.5;
-        globe.controls().enableZoom = false;
+        globe.controls().enableZoom = true;
         
         // Initial camera position (lower altitude = bigger earth)
         globe.pointOfView({ lat: 20, lng: 0, altitude: 1.8 }, 0);
@@ -178,6 +198,11 @@ function handlePolygonHover(polygon) {
     if (quizActive) {
         // During quiz, only change cursor
         document.body.style.cursor = polygon && polygon.properties.continent === currentContinent ? 'pointer' : 'default';
+        return;
+    }
+
+    // While the quiz chooser popup is open, keep the selected continent raised
+    if (!document.getElementById('quizChooser').classList.contains('hidden')) {
         return;
     }
     
@@ -230,6 +255,7 @@ function showQuizChooser(continentCode) {
     const chooser = document.getElementById('quizChooser');
     document.getElementById('chooserTitle').textContent = continentNames[continentCode];
     chooser.classList.remove('hidden');
+    document.getElementById('quizChooserOverlay').classList.remove('hidden');
     
     // Stop auto-rotation
     globe.controls().autoRotate = false;
@@ -239,7 +265,7 @@ function showQuizChooser(continentCode) {
         globe.pointOfView({
             lat: defaultCenters[continentCode].lat,
             lng: defaultCenters[continentCode].lon,
-            altitude: 1.5
+            altitude: continentZoom[continentCode] ?? defaultZoom
         }, 1000);
     }
 }
@@ -247,9 +273,11 @@ function showQuizChooser(continentCode) {
 // Hide quiz chooser
 function hideQuizChooser() {
     document.getElementById('quizChooser').classList.add('hidden');
+    document.getElementById('quizChooserOverlay').classList.add('hidden');
     currentContinent = null;
     globe.controls().autoRotate = true;
-    globe.pointOfView({ lat: 20, lng: 0, altitude: 1.8 }, 1000);
+    const currentLng = globe.pointOfView().lng;
+    globe.pointOfView({ lat: 20, lng: currentLng, altitude: 1.8 }, 1000);
 }
 
 // Start quiz for a continent
@@ -260,6 +288,7 @@ async function startQuiz(continentCode, mode) {
     
     // Hide chooser
     document.getElementById('quizChooser').classList.add('hidden');
+    document.getElementById('quizChooserOverlay').classList.add('hidden');
     
     // Stop auto-rotation and disable manual rotation
     globe.controls().autoRotate = false;
@@ -305,7 +334,7 @@ async function startQuiz(continentCode, mode) {
         globe.pointOfView({
             lat: defaultCenters[continentCode].lat,
             lng: defaultCenters[continentCode].lon,
-            altitude: 1.5
+            altitude: continentZoom[continentCode] ?? defaultZoom
         }, 1000);
     }
     
@@ -430,6 +459,7 @@ function updateGlobeColors() {
         if (quizActive && d.properties.continent !== currentContinent) return 0.01;
         if (answeredCountries.has(d.properties.name)) return 0.005; // Lower for correct
         if (wrongCountries.has(d.properties.name)) return 0.005; // Lower for wrong
+        if (quizActive && d.properties.continent === currentContinent) return 0.09; // Keep continent raised
         return 0.01;
     }).polygonCapColor(d => {
         const continent = d.properties.continent;
@@ -479,6 +509,20 @@ function exitQuiz() {
     updateGlobeColors();
 }
 
+// Camera info overlay
+const cameraInfoEl = document.getElementById('cameraInfo');
+function updateCameraInfo() {
+    const pov = globe.pointOfView();
+    if (pov && cameraInfoEl) {
+        cameraInfoEl.textContent =
+            `lat  ${pov.lat.toFixed(2)}\n` +
+            `lon  ${pov.lng.toFixed(2)}\n` +
+            `zoom ${pov.altitude.toFixed(2)}`;
+    }
+    requestAnimationFrame(updateCameraInfo);
+}
+requestAnimationFrame(updateCameraInfo);
+
 // Handle window resize
 window.addEventListener('resize', () => {
     globe.width(window.innerWidth).height(window.innerHeight);
@@ -506,5 +550,9 @@ document.getElementById('chooseCapitalQuiz').addEventListener('click', () => {
 });
 
 document.getElementById('cancelChooser').addEventListener('click', () => {
+    hideQuizChooser();
+});
+
+document.getElementById('quizChooserOverlay').addEventListener('click', () => {
     hideQuizChooser();
 });

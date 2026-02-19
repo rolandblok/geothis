@@ -6,9 +6,10 @@
 		"maxLat": 75
 	},
 	"center": {
-		"lat": 30,
-		"lon": 100
+		"lat": 18,
+		"lon": 103
 	},
+	"zoom": 1.3,
 	"countries": [
 		"afghanistan",
 		"armenia",

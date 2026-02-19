@@ -13,14 +13,15 @@
     <div class="intro-container">
         <div class="earth-container" id="globeViz"></div>
         <button id="textureBtn" title="Switch texture">🌍</button>
+        <div id="cameraInfo" class="camera-info"></div>
+        <div id="quizChooserOverlay" class="quiz-chooser-overlay hidden"></div>
         <div id="quizChooser" class="quiz-chooser hidden">
             <h2 id="chooserTitle"></h2>
-            <p>Choose quiz type:</p>
             <div class="chooser-buttons">
-                <button id="chooseCountryQuiz" class="chooser-btn">🌍 Country Quiz</button>
-                <button id="chooseCapitalQuiz" class="chooser-btn">🏠 Capital Quiz</button>
+                <button id="chooseCountryQuiz" class="chooser-btn">Country Quiz</button>
+                <button id="chooseCapitalQuiz" class="chooser-btn">Capital Quiz</button>
             </div>
-            <button id="cancelChooser" class="chooser-cancel">← Back</button>
+            <button id="cancelChooser" class="chooser-cancel">✕</button>
         </div>
         <div id="quizPanel" class="quiz-panel hidden">
             <div class="quiz-header">

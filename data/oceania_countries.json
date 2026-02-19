@@ -9,6 +9,7 @@
 		"lat": -25,
 		"lon": 140
 	},
+	"zoom": 1.5,
 	"countries": [
 		"australia",
 		"fiji",

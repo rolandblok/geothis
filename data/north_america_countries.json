@@ -9,6 +9,7 @@
 		"lat": 45,
 		"lon": -100
 	},
+	"zoom": 1.5,
 	"countries": [
 		"canada",
 		"united states",

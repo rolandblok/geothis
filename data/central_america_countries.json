@@ -6,9 +6,10 @@
     "maxLat": 33
   },
   "center": {
-    "lat": 19,
-    "lon": -89.5
+    "lat": 14.8,
+    "lon": -78
   },
+  "zoom": 0.7,
   "countries": [
     "Belize",
     "Costa Rica",
