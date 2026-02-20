@@ -386,110 +386,88 @@ async function startStateQuiz(countryCode) {
     }
 }
 
-// Load US states boundaries and data
+// Country configurations for state/province loading
+const countryConfigs = {
+    usa: {
+        configFile: 'data/country_usa.json',
+        topoFile: './data/country_usa_TopoJSON.json',
+        topoObjects: ['states', 'usa'],
+        nameProps: ['NAME', 'name', 'State', 'state', 'NAME_EN', 'STUSPS', 'GEOID']
+    },
+    canada: {
+        configFile: 'data/country_canada.json', 
+        topoFile: './data/country_canada_TopoJSON.json',
+        topoObjects: ['provinces', 'canada'],
+        nameProps: ['NAME', 'PRENAME', 'PROVINCE', 'name', 'Province', 'province', 'NAME_EN', 'NAME_1']
+    },
+    mexico: {
+        configFile: 'data/country_mexico.json',
+        topoFile: './data/country_mexico_TopoJSON.json', 
+        topoObjects: ['states', 'mexico'],
+        nameProps: ['state_name', 'NAME', 'NAME_1', 'ESTADO', 'name', 'State', 'state', 'NAME_EN', 'NOM_ENT']
+    }
+};
+
 // Load states/provinces data for a country
 async function loadStatesData(countryCode, title) {
     try {
-        let topology, statesGeoJSON, countryConfigData = null;
-        
-        if (countryCode === 'usa') {
-            // Load USA states data and TopoJSON in parallel
-            const [usaDataResponse, topoResponse] = await Promise.all([
-                fetch('data/country_usa.json'),
-                fetch('./data/country_usa_TopoJSON.json')
-            ]);
-            
-            countryConfigData = await usaDataResponse.json();
-            topology = await topoResponse.json();
-            statesGeoJSON = topojson.feature(topology, topology.objects.states || topology.objects.usa || topology.objects[Object.keys(topology.objects)[0]]);
-            
-            // Extract state names from properties and add capital data
-            stateData = statesGeoJSON.features.map(feat => {
-                // Try common property names for state names
-                const props = feat.properties || {};
-                const stateName = props.NAME || props.name || props.State || props.state ||
-                               props.NAME_EN || props.STUSPS || props.GEOID || 'Unknown';
-                
-                // Get capital info from countryConfigData
-                const capitalInfo = countryConfigData.capitals[stateName];
-                
-                return {
-                    ...feat,
-                    properties: {
-                        ...props,
-                        name: stateName,
-                        capital: capitalInfo?.capital || null,
-                        capitalCoords: capitalInfo ? [capitalInfo.lon, capitalInfo.lat] : null
-                    }
-                };
-            }).filter(feat => feat.properties.name !== 'Unknown' && feat.geometry && feat.geometry.type);
-            
-        } else if (countryCode === 'canada') {
-            // Load Canada provinces data and TopoJSON in parallel
-            const [canadaDataResponse, topoResponse] = await Promise.all([
-                fetch('data/country_canada.json'),
-                fetch('./data/country_canada_TopoJSON.json')
-            ]);
-            
-            countryConfigData = await canadaDataResponse.json();
-            const topology = await topoResponse.json();
-            statesGeoJSON = topojson.feature(topology, topology.objects.provinces || topology.objects.canada || topology.objects[Object.keys(topology.objects)[0]]);
-            
-            // Extract province names from properties and add capital data
-            stateData = statesGeoJSON.features.map(feat => {
-                // Try common property names for province names
-                const props = feat.properties || {};
-                const provinceName = props.NAME || props.PRENAME || props.PROVINCE || 
-                                   props.name || props.Province || props.province ||
-                                   props.NAME_EN || props.NAME_1 || 'Unknown';
-                
-                // Get capital info from countryConfigData
-                const capitalInfo = countryConfigData.capitals[provinceName];
-                
-                return {
-                    ...feat,
-                    properties: {
-                        ...props,
-                        name: provinceName,
-                        capital: capitalInfo?.capital || null,
-                        capitalCoords: capitalInfo ? [capitalInfo.lon, capitalInfo.lat] : null
-                    }
-                };
-            }).filter(feat => feat.properties.name !== 'Unknown' && feat.geometry && feat.geometry.type);
-            
-        } else if (countryCode === 'mexico') {
-            // Load Mexico states data and TopoJSON in parallel
-            const [mexicoDataResponse, topoResponse] = await Promise.all([
-                fetch('data/country_mexico.json'),
-                fetch('./data/country_mexico_TopoJSON.json')
-            ]);
-            
-            countryConfigData = await mexicoDataResponse.json();
-            const topology = await topoResponse.json();
-            statesGeoJSON = topojson.feature(topology, topology.objects.states || topology.objects.mexico || topology.objects[Object.keys(topology.objects)[0]]);
-            
-            // Extract state names from properties and add capital data
-            stateData = statesGeoJSON.features.map(feat => {
-                // Try common property names for state names
-                const props = feat.properties || {};
-                const stateName = props.state_name || props.NAME || props.NAME_1 || props.ESTADO || 
-                               props.name || props.State || props.state ||
-                               props.NAME_EN || props.NOM_ENT || 'Unknown';
-                
-                // Get capital info from countryConfigData
-                const capitalInfo = countryConfigData.capitals[stateName];
-                
-                return {
-                    ...feat,
-                    properties: {
-                        ...props,
-                        name: stateName,
-                        capital: capitalInfo?.capital || null,
-                        capitalCoords: capitalInfo ? [capitalInfo.lon, capitalInfo.lat] : null
-                    }
-                };
-            }).filter(feat => feat.properties.name !== 'Unknown' && feat.geometry && feat.geometry.type);
+        const config = countryConfigs[countryCode];
+        if (!config) {
+            throw new Error(`No configuration found for country: ${countryCode}`);
         }
+        
+        // Load country data and TopoJSON in parallel
+        const [configDataResponse, topoResponse] = await Promise.all([
+            fetch(config.configFile),
+            fetch(config.topoFile)
+        ]);
+        
+        const countryConfigData = await configDataResponse.json();
+        const topology = await topoResponse.json();
+        
+        // Find the correct TopoJSON object
+        let topoObject = null;
+        for (const objName of config.topoObjects) {
+            if (topology.objects[objName]) {
+                topoObject = topology.objects[objName];
+                break;
+            }
+        }
+        
+        // Fallback to first available object
+        if (!topoObject) {
+            const firstKey = Object.keys(topology.objects)[0];
+            topoObject = topology.objects[firstKey];
+        }
+        
+        const statesGeoJSON = topojson.feature(topology, topoObject);
+        
+        // Extract names from properties and add capital data
+        stateData = statesGeoJSON.features.map(feat => {
+            const props = feat.properties || {};
+            
+            // Try property names in order of preference
+            let stateName = 'Unknown';
+            for (const propName of config.nameProps) {
+                if (props[propName]) {
+                    stateName = props[propName];
+                    break;
+                }
+            }
+            
+            // Get capital info from config data
+            const capitalInfo = countryConfigData.capitals[stateName];
+            
+            return {
+                ...feat,
+                properties: {
+                    ...props,
+                    name: stateName,
+                    capital: capitalInfo?.capital || null,
+                    capitalCoords: capitalInfo ? [capitalInfo.lon, capitalInfo.lat] : null
+                }
+            };
+        }).filter(feat => feat.properties.name !== 'Unknown' && feat.geometry && feat.geometry.type);
         
         // Set the quiz title
         document.getElementById('continentTitle').textContent = title;
@@ -512,7 +490,7 @@ async function loadStatesData(countryCode, title) {
         // Center on country using config data
         let view = { lat: 40, lng: -100, altitude: 1.5 }; // default
         
-        if ((countryCode === 'usa' || countryCode === 'canada' || countryCode === 'mexico') && countryConfigData) {
+        if (countryConfigData && countryConfigData.center && countryConfigData.zoom) {
             view = {
                 lat: countryConfigData.center.lat,
                 lng: countryConfigData.center.lon,
