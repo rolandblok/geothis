@@ -390,35 +390,39 @@ async function startStateQuiz(countryCode) {
 // Load states/provinces data for a country
 async function loadStatesData(countryCode, title) {
     try {
-        let statesDataFromFile, topology, statesGeoJSON, countryConfigData = null;
+        let topology, statesGeoJSON, countryConfigData = null;
         
         if (countryCode === 'usa') {
-            // Load US state data and TopoJSON
-            const [statesDataResponse, topoResponse] = await Promise.all([
-                fetch('data/us-states.json'),
-                fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json')
+            // Load USA states data and TopoJSON in parallel
+            const [usaDataResponse, topoResponse] = await Promise.all([
+                fetch('data/country_usa.json'),
+                fetch('./data/country_usa_TopoJSON.json')
             ]);
             
-            statesDataFromFile = await statesDataResponse.json();
+            countryConfigData = await usaDataResponse.json();
             topology = await topoResponse.json();
-            statesGeoJSON = topojson.feature(topology, topology.objects.states);
+            statesGeoJSON = topojson.feature(topology, topology.objects.states || topology.objects.usa || topology.objects[Object.keys(topology.objects)[0]]);
             
-            // Add state names and capitals to features
+            // Extract state names from properties and add capital data
             stateData = statesGeoJSON.features.map(feat => {
-                const fips = String(feat.id).padStart(2, '0');
-                const stateName = statesDataFromFile.fipsToName[fips] || 'Unknown';
-                const capitalInfo = statesDataFromFile.capitals[stateName];
+                // Try common property names for state names
+                const props = feat.properties || {};
+                const stateName = props.NAME || props.name || props.State || props.state ||
+                               props.NAME_EN || props.STUSPS || props.GEOID || 'Unknown';
+                
+                // Get capital info from countryConfigData
+                const capitalInfo = countryConfigData.capitals[stateName];
                 
                 return {
                     ...feat,
                     properties: {
-                        ...feat.properties,
+                        ...props,
                         name: stateName,
                         capital: capitalInfo?.capital || null,
                         capitalCoords: capitalInfo ? [capitalInfo.lon, capitalInfo.lat] : null
                     }
                 };
-            }).filter(feat => feat.properties.name !== 'Unknown');
+            }).filter(feat => feat.properties.name !== 'Unknown' && feat.geometry && feat.geometry.type);
             
         } else if (countryCode === 'canada') {
             // Load Canada provinces data and TopoJSON in parallel
@@ -451,7 +455,7 @@ async function loadStatesData(countryCode, title) {
                         capitalCoords: capitalInfo ? [capitalInfo.lon, capitalInfo.lat] : null
                     }
                 };
-            }).filter(feat => feat.properties.name !== 'Unknown');
+            }).filter(feat => feat.properties.name !== 'Unknown' && feat.geometry && feat.geometry.type);
             
         } else if (countryCode === 'mexico') {
             // Load Mexico states data and TopoJSON in parallel
@@ -484,7 +488,7 @@ async function loadStatesData(countryCode, title) {
                         capitalCoords: capitalInfo ? [capitalInfo.lon, capitalInfo.lat] : null
                     }
                 };
-            }).filter(feat => feat.properties.name !== 'Unknown');
+            }).filter(feat => feat.properties.name !== 'Unknown' && feat.geometry && feat.geometry.type);
         }
         
         // Set the quiz title
@@ -508,7 +512,7 @@ async function loadStatesData(countryCode, title) {
         // Center on country using config data
         let view = { lat: 40, lng: -100, altitude: 1.5 }; // default
         
-        if ((countryCode === 'canada' || countryCode === 'mexico') && countryConfigData) {
+        if ((countryCode === 'usa' || countryCode === 'canada' || countryCode === 'mexico') && countryConfigData) {
             view = {
                 lat: countryConfigData.center.lat,
                 lng: countryConfigData.center.lon,

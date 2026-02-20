@@ -1,0 +1,317 @@
+{
+	"bounds": {
+		"minLon": -179.1,
+		"maxLon": -66.9,
+		"minLat": 18.9,
+		"maxLat": 71.4
+	},
+	"center": {
+		"lat": 40.0,
+		"lon": -100.0
+	},
+	"zoom": 1.5,
+	"states": [
+		"alabama",
+		"alaska",
+		"arizona",
+		"arkansas",
+		"california",
+		"colorado",
+		"connecticut",
+		"delaware",
+		"florida",
+		"georgia",
+		"hawaii",
+		"idaho",
+		"illinois",
+		"indiana",
+		"iowa",
+		"kansas",
+		"kentucky",
+		"louisiana",
+		"maine",
+		"maryland",
+		"massachusetts",
+		"michigan",
+		"minnesota",
+		"mississippi",
+		"missouri",
+		"montana",
+		"nebraska",
+		"nevada",
+		"new hampshire",
+		"new jersey",
+		"new mexico",
+		"new york",
+		"north carolina",
+		"north dakota",
+		"ohio",
+		"oklahoma",
+		"oregon",
+		"pennsylvania",
+		"rhode island",
+		"south carolina",
+		"south dakota",
+		"tennessee",
+		"texas",
+		"utah",
+		"vermont",
+		"virginia",
+		"washington",
+		"west virginia",
+		"wisconsin",
+		"wyoming"
+	],
+	"capitals": {
+		"Alabama": {
+			"capital": "Montgomery",
+			"lat": 32.377716,
+			"lon": -86.300568
+		},
+		"Alaska": {
+			"capital": "Juneau",
+			"lat": 58.301598,
+			"lon": -134.420212
+		},
+		"Arizona": {
+			"capital": "Phoenix",
+			"lat": 33.448143,
+			"lon": -112.096962
+		},
+		"Arkansas": {
+			"capital": "Little Rock",
+			"lat": 34.746613,
+			"lon": -92.288986
+		},
+		"California": {
+			"capital": "Sacramento",
+			"lat": 38.576668,
+			"lon": -121.493629
+		},
+		"Colorado": {
+			"capital": "Denver",
+			"lat": 39.739227,
+			"lon": -104.984856
+		},
+		"Connecticut": {
+			"capital": "Hartford",
+			"lat": 41.764046,
+			"lon": -72.682198
+		},
+		"Delaware": {
+			"capital": "Dover",
+			"lat": 39.157307,
+			"lon": -75.519722
+		},
+		"Florida": {
+			"capital": "Tallahassee",
+			"lat": 30.438118,
+			"lon": -84.281296
+		},
+		"Georgia": {
+			"capital": "Atlanta",
+			"lat": 33.749027,
+			"lon": -84.388229
+		},
+		"Hawaii": {
+			"capital": "Honolulu",
+			"lat": 21.307442,
+			"lon": -157.857376
+		},
+		"Idaho": {
+			"capital": "Boise",
+			"lat": 43.617775,
+			"lon": -116.199722
+		},
+		"Illinois": {
+			"capital": "Springfield",
+			"lat": 39.798363,
+			"lon": -89.654961
+		},
+		"Indiana": {
+			"capital": "Indianapolis",
+			"lat": 39.768623,
+			"lon": -86.162643
+		},
+		"Iowa": {
+			"capital": "Des Moines",
+			"lat": 41.591087,
+			"lon": -93.603729
+		},
+		"Kansas": {
+			"capital": "Topeka",
+			"lat": 39.048191,
+			"lon": -95.677956
+		},
+		"Kentucky": {
+			"capital": "Frankfort",
+			"lat": 38.186722,
+			"lon": -84.875374
+		},
+		"Louisiana": {
+			"capital": "Baton Rouge",
+			"lat": 30.457069,
+			"lon": -91.187393
+		},
+		"Maine": {
+			"capital": "Augusta",
+			"lat": 44.307167,
+			"lon": -69.781693
+		},
+		"Maryland": {
+			"capital": "Annapolis",
+			"lat": 38.978764,
+			"lon": -76.490936
+		},
+		"Massachusetts": {
+			"capital": "Boston",
+			"lat": 42.358162,
+			"lon": -71.063698
+		},
+		"Michigan": {
+			"capital": "Lansing",
+			"lat": 42.733635,
+			"lon": -84.555328
+		},
+		"Minnesota": {
+			"capital": "Saint Paul",
+			"lat": 44.955097,
+			"lon": -93.102211
+		},
+		"Mississippi": {
+			"capital": "Jackson",
+			"lat": 32.303848,
+			"lon": -90.182106
+		},
+		"Missouri": {
+			"capital": "Jefferson City",
+			"lat": 38.579201,
+			"lon": -92.172935
+		},
+		"Montana": {
+			"capital": "Helena",
+			"lat": 46.585709,
+			"lon": -112.018417
+		},
+		"Nebraska": {
+			"capital": "Lincoln",
+			"lat": 40.808075,
+			"lon": -96.699654
+		},
+		"Nevada": {
+			"capital": "Carson City",
+			"lat": 39.163914,
+			"lon": -119.766121
+		},
+		"New Hampshire": {
+			"capital": "Concord",
+			"lat": 43.206898,
+			"lon": -71.537994
+		},
+		"New Jersey": {
+			"capital": "Trenton",
+			"lat": 40.22039,
+			"lon": -74.7643
+		},
+		"New Mexico": {
+			"capital": "Santa Fe",
+			"lat": 35.68224,
+			"lon": -105.939728
+		},
+		"New York": {
+			"capital": "Albany",
+			"lat": 42.652843,
+			"lon": -73.757874
+		},
+		"North Carolina": {
+			"capital": "Raleigh",
+			"lat": 35.78043,
+			"lon": -78.639099
+		},
+		"North Dakota": {
+			"capital": "Bismarck",
+			"lat": 46.82085,
+			"lon": -100.783318
+		},
+		"Ohio": {
+			"capital": "Columbus",
+			"lat": 39.961346,
+			"lon": -82.999069
+		},
+		"Oklahoma": {
+			"capital": "Oklahoma City",
+			"lat": 35.492207,
+			"lon": -97.503342
+		},
+		"Oregon": {
+			"capital": "Salem",
+			"lat": 44.938461,
+			"lon": -123.030403
+		},
+		"Pennsylvania": {
+			"capital": "Harrisburg",
+			"lat": 40.264378,
+			"lon": -76.883598
+		},
+		"Rhode Island": {
+			"capital": "Providence",
+			"lat": 41.830914,
+			"lon": -71.414963
+		},
+		"South Carolina": {
+			"capital": "Columbia",
+			"lat": 34.000343,
+			"lon": -81.033211
+		},
+		"South Dakota": {
+			"capital": "Pierre",
+			"lat": 44.367031,
+			"lon": -100.346405
+		},
+		"Tennessee": {
+			"capital": "Nashville",
+			"lat": 36.16581,
+			"lon": -86.784241
+		},
+		"Texas": {
+			"capital": "Austin",
+			"lat": 30.27467,
+			"lon": -97.740349
+		},
+		"Utah": {
+			"capital": "Salt Lake City",
+			"lat": 40.777477,
+			"lon": -111.888237
+		},
+		"Vermont": {
+			"capital": "Montpelier",
+			"lat": 44.262436,
+			"lon": -72.580536
+		},
+		"Virginia": {
+			"capital": "Richmond",
+			"lat": 37.538857,
+			"lon": -77.43364
+		},
+		"Washington": {
+			"capital": "Olympia",
+			"lat": 47.035805,
+			"lon": -122.905014
+		},
+		"West Virginia": {
+			"capital": "Charleston",
+			"lat": 38.336246,
+			"lon": -81.612328
+		},
+		"Wisconsin": {
+			"capital": "Madison",
+			"lat": 43.074684,
+			"lon": -89.384445
+		},
+		"Wyoming": {
+			"capital": "Cheyenne",
+			"lat": 41.140259,
+			"lon": -104.820236
+		}
+	}
+}
