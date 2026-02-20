@@ -57,6 +57,9 @@ let continentNames = {};
 let continentColors = {};
 let borders = { strokeColor: 'rgba(255,255,255,1)', sideColor: 'rgba(0,100,200,0.15)' };
 let backgroundColor = 'rgba(15, 23, 42, 1)';
+let altitudes = { normal: 0.01, selected: 0.09, answered: 0.005 };
+let capitalColors = { normal: 'rgba(255, 255, 255, 0.9)', correct: 'rgba(22, 163, 74, 0.9)', wrong: 'rgba(185, 28, 28, 0.9)' };
+let countryQuizColors = { correct: 'rgba(34, 197, 94, 0.7)', wrong: 'rgba(239, 68, 68, 0.7)' };
 
 fetch('data/settings.json')
     .then(res => res.json())
@@ -64,6 +67,9 @@ fetch('data/settings.json')
         continentColors = data.continentColors;
         if (data.borders) borders = data.borders;
         if (data.backgroundColor) backgroundColor = data.backgroundColor;
+        if (data.altitudes) altitudes = data.altitudes;
+        if (data.capitalColors) capitalColors = data.capitalColors;
+        if (data.countryQuizColors) countryQuizColors = data.countryQuizColors;
     })
     .catch(error => console.error('Error loading settings:', error));
 
@@ -163,7 +169,7 @@ fetch('//cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
         // Configure globe with country polygons
         globe
             .polygonsData(continentData)
-            .polygonAltitude(d => d === hoveredContinent ? 0.09 : 0.01)
+            .polygonAltitude(d => d === hoveredContinent ? altitudes.selected : altitudes.normal)
             .polygonCapColor(d => {
                 const continent = d.properties.continent;
                 if (!continent) return 'rgba(100, 100, 100, 0.3)';
@@ -212,8 +218,8 @@ function handlePolygonHover(polygon) {
         // Update all polygons for the same continent
         globe
             .polygonAltitude(d => {
-                if (!d || !polygon) return 0.01;
-                return d.properties.continent === polygon.properties.continent ? 0.09 : 0.01;
+                if (!d || !polygon) return altitudes.normal;
+                return d.properties.continent === polygon.properties.continent ? altitudes.selected : altitudes.normal;
             })
             .polygonCapColor(d => {
                 const continent = d.properties.continent;
@@ -226,7 +232,7 @@ function handlePolygonHover(polygon) {
         document.body.style.cursor = 'default';
         
         globe
-            .polygonAltitude(0.01)
+            .polygonAltitude(altitudes.normal)
             .polygonCapColor(d => {
                 const continent = d.properties.continent;
                 if (!continent) return 'rgba(100, 100, 100, 0.3)';
@@ -358,10 +364,23 @@ async function startQuiz(continentCode, mode) {
             });
         globe
             .pointsData(capitalPoints)
-            .pointAltitude(0.02)
+            .pointAltitude(d => {
+                // Find current altitude for the country this capital belongs to
+                const countryName = d.country;
+                let countryAltitude = altitudes.selected; // Default for active continent
+                
+                if (answeredCountries.has(countryName)) {
+                    countryAltitude = altitudes.answered;
+                } else if (wrongCountries.has(countryName)) {
+                    countryAltitude = altitudes.answered;
+                }
+                
+                return countryAltitude + altitudes.capitalOffset;
+            })
             .pointRadius('size')
             .pointColor('color')
             .pointLabel(() => '')
+            .pointsTransitionDuration(300)
             .onPointClick(point => {
                 // Find the polygon for this capital's country
                 const polygon = continentCountries.find(d => d.properties.name === point.country);
@@ -455,12 +474,12 @@ function checkAnswer(clickedPolygon) {
 // Update globe colors based on quiz state
 function updateGlobeColors() {
     globe.polygonAltitude(d => {
-        if (!d || !d.properties.continent) return 0.01;
-        if (quizActive && d.properties.continent !== currentContinent) return 0.01;
-        if (answeredCountries.has(d.properties.name)) return 0.005; // Lower for correct
-        if (wrongCountries.has(d.properties.name)) return 0.005; // Lower for wrong
-        if (quizActive && d.properties.continent === currentContinent) return 0.09; // Keep continent raised
-        return 0.01;
+        if (!d || !d.properties.continent) return altitudes.normal;
+        if (quizActive && d.properties.continent !== currentContinent) return altitudes.normal;
+        if (answeredCountries.has(d.properties.name)) return altitudes.answered; // Lower for correct
+        if (wrongCountries.has(d.properties.name)) return altitudes.answered; // Lower for wrong
+        if (quizActive && d.properties.continent === currentContinent) return altitudes.selected; // Keep continent raised
+        return altitudes.normal;
     }).polygonCapColor(d => {
         const continent = d.properties.continent;
         if (!continent) return 'rgba(100, 100, 100, 0.3)';
@@ -473,12 +492,12 @@ function updateGlobeColors() {
             
             // Show answered countries in green
             if (answeredCountries.has(d.properties.name)) {
-                return 'rgba(34, 197, 94, 0.7)';
+                return countryQuizColors.correct;
             }
             
             // Show wrong countries in red
             if (wrongCountries.has(d.properties.name)) {
-                return 'rgba(239, 68, 68, 0.7)';
+                return countryQuizColors.wrong;
             }
             
             // Active continent countries
@@ -487,6 +506,37 @@ function updateGlobeColors() {
         
         return continentColors[continent].normal;
     });
+    
+    // Update capital point altitudes and colors if in capital mode
+    if (quizActive && quizMode === 'capital') {
+        globe.pointAltitude(d => {
+            const countryName = d.country;
+            let countryAltitude = altitudes.selected; // Default for active continent
+            
+            if (answeredCountries.has(countryName)) {
+                countryAltitude = altitudes.answered;
+            } else if (wrongCountries.has(countryName)) {
+                countryAltitude = altitudes.answered;
+            }
+            
+            return countryAltitude + altitudes.capitalOffset;
+        }).pointColor(d => {
+            const countryName = d.country;
+            
+            // Show answered capitals in darker green
+            if (answeredCountries.has(countryName)) {
+                return capitalColors.correct;
+            }
+            
+            // Show wrong capitals in darker red
+            if (wrongCountries.has(countryName)) {
+                return capitalColors.wrong;
+            }
+            
+            // Default white for active capitals
+            return capitalColors.normal;
+        });
+    }
 }
 
 // Exit quiz

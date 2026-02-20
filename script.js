@@ -690,16 +690,27 @@ const buildMap = (features, projection) => {
 	}
 
 	if (capitalPoints.length) {
-		capitalsLayer = mapSvg.append("g").attr("class", "capitals");
+		capitalsLayer = mapSvg.append("g")
+			.attr("class", "capitals")
+			.style("pointer-events", "auto")
+			.style("z-index", "1000");
 		capitalsLayer
 			.selectAll("circle")
 			.data(capitalPoints.filter((point) => !point.hideInCapitalsLayer))
 			.join("circle")
-			.attr("r", 4)
+			.attr("r", 6)
 			.attr("cx", (d) => d.coords[0])
 			.attr("cy", (d) => d.coords[1])
-			.attr("pointer-events", (d) => (d.isStandalone ? "none" : "auto"))
-			.on("click", (event, d) => checkMapAnswer(d.state));
+			.attr("fill", "red")
+			.attr("stroke", "white")
+			.attr("stroke-width", 3)
+			.style("cursor", "pointer")
+			.style("pointer-events", "all")
+			.raise()
+			.on("click", (event, d) => {
+				event.stopPropagation();
+				checkMapAnswer(d.state);
+			});
 	}
 
 	pickNextState();

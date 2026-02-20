@@ -28,6 +28,11 @@
 			"lat": 38.9072,
 			"lon": -77.0369
 		},
+		"United States of America": {
+			"capital": "Washington, D.C.",
+			"lat": 38.9072,
+			"lon": -77.0369
+		},
 		"Mexico": {
 			"capital": "Mexico City",
 			"lat": 19.4326,
