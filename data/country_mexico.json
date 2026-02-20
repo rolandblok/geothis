@@ -1,0 +1,209 @@
+{
+	"bounds": {
+		"minLon": -118.4,
+		"maxLon": -86.7,
+		"minLat": 14.5,
+		"maxLat": 32.7
+	},
+	"center": {
+		"lat": 23.0,
+		"lon": -102.0
+	},
+	"zoom": 0.51,
+	"states": [
+		"aguascalientes",
+		"baja california",
+		"baja california sur",
+		"campeche",
+		"chiapas",
+		"chihuahua",
+		"coahuila de zaragoza",
+		"colima",
+		"distrito federal",
+		"durango",
+		"guanajuato",
+		"guerrero",
+		"hidalgo",
+		"jalisco",
+		"méxico",
+		"michoacán de ocampo",
+		"morelos",
+		"nayarit",
+		"nuevo león",
+		"oaxaca",
+		"puebla",
+		"querétaro",
+		"quintana roo",
+		"san luis potosí",
+		"sinaloa",
+		"sonora",
+		"tabasco",
+		"tamaulipas",
+		"tlaxcala",
+		"veracruz de ignacio de la llave",
+		"yucatán",
+		"zacatecas"
+	],
+	"capitals": {
+		"Aguascalientes": {
+			"capital": "Aguascalientes",
+			"lat": 21.8818,
+			"lon": -102.2916
+		},
+		"Baja California": {
+			"capital": "Mexicali",
+			"lat": 32.6245,
+			"lon": -115.4683
+		},
+		"Baja California Sur": {
+			"capital": "La Paz",
+			"lat": 24.1426,
+			"lon": -110.3009
+		},
+		"Campeche": {
+			"capital": "Campeche",
+			"lat": 19.8301,
+			"lon": -90.5349
+		},
+		"Chiapas": {
+			"capital": "Tuxtla Gutiérrez",
+			"lat": 16.7569,
+			"lon": -93.1161
+		},
+		"Chihuahua": {
+			"capital": "Chihuahua",
+			"lat": 28.6353,
+			"lon": -106.0889
+		},
+		"Coahuila de Zaragoza": {
+			"capital": "Saltillo",
+			"lat": 25.4232,
+			"lon": -101.0042
+		},
+		"Colima": {
+			"capital": "Colima",
+			"lat": 19.2452,
+			"lon": -103.7240
+		},
+		"Distrito Federal": {
+			"capital": "Mexico City",
+			"lat": 19.4326,
+			"lon": -99.1332
+		},
+		"Durango": {
+			"capital": "Durango",
+			"lat": 24.0277,
+			"lon": -104.6737
+		},
+		"Guanajuato": {
+			"capital": "Guanajuato",
+			"lat": 21.0190,
+			"lon": -101.2570
+		},
+		"Guerrero": {
+			"capital": "Chilpancingo",
+			"lat": 17.5506,
+			"lon": -99.5041
+		},
+		"Hidalgo": {
+			"capital": "Pachuca",
+			"lat": 20.1011,
+			"lon": -98.7624
+		},
+		"Jalisco": {
+			"capital": "Guadalajara",
+			"lat": 20.6597,
+			"lon": -103.3496
+		},
+		"México": {
+			"capital": "Toluca",
+			"lat": 19.2926,
+			"lon": -99.6711
+		},
+		"Michoacán de Ocampo": {
+			"capital": "Morelia",
+			"lat": 19.7060,
+			"lon": -101.1949
+		},
+		"Morelos": {
+			"capital": "Cuernavaca",
+			"lat": 18.9219,
+			"lon": -99.2336
+		},
+		"Nayarit": {
+			"capital": "Tepic",
+			"lat": 21.5041,
+			"lon": -104.8939
+		},
+		"Nuevo León": {
+			"capital": "Monterrey",
+			"lat": 25.6866,
+			"lon": -100.3161
+		},
+		"Oaxaca": {
+			"capital": "Oaxaca",
+			"lat": 17.0732,
+			"lon": -96.7266
+		},
+		"Puebla": {
+			"capital": "Puebla",
+			"lat": 19.0414,
+			"lon": -98.2063
+		},
+		"Querétaro": {
+			"capital": "Querétaro",
+			"lat": 20.5888,
+			"lon": -100.3918
+		},
+		"Quintana Roo": {
+			"capital": "Chetumal",
+			"lat": 18.5001,
+			"lon": -88.3059
+		},
+		"San Luis Potosí": {
+			"capital": "San Luis Potosí",
+			"lat": 22.1565,
+			"lon": -100.9855
+		},
+		"Sinaloa": {
+			"capital": "Culiacán",
+			"lat": 24.7996,
+			"lon": -107.3940
+		},
+		"Sonora": {
+			"capital": "Hermosillo",
+			"lat": 29.0729,
+			"lon": -110.9559
+		},
+		"Tabasco": {
+			"capital": "Villahermosa",
+			"lat": 17.9869,
+			"lon": -92.9376
+		},
+		"Tamaulipas": {
+			"capital": "Ciudad Victoria",
+			"lat": 23.7369,
+			"lon": -99.1269
+		},
+		"Tlaxcala": {
+			"capital": "Tlaxcala",
+			"lat": 19.3133,
+			"lon": -98.2375
+		},
+		"Veracruz de Ignacio de la Llave": {
+			"capital": "Xalapa",
+			"lat": 19.5438,
+			"lon": -96.9147
+		},
+		"Yucatán": {
+			"capital": "Mérida",
+			"lat": 20.9674,
+			"lon": -89.5926
+		},
+		"Zacatecas": {
+			"capital": "Zacatecas",
+			"lat": 22.7709,
+			"lon": -102.5832
+		}
+	}
+}

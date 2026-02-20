@@ -1,0 +1,95 @@
+{
+	"bounds": {
+		"minLon": -141.0,
+		"maxLon": -52.6,
+		"minLat": 41.7,
+		"maxLat": 83.1
+	},
+	"center": {
+		"lat": 60.0,
+		"lon": -82.0
+	},
+	"zoom": 0.8,
+	"provinces": [
+		"british columbia",
+		"alberta", 
+		"saskatchewan",
+		"manitoba",
+		"ontario",
+		"quebec",
+		"new brunswick",
+		"nova scotia",
+		"prince edward island",
+		"newfoundland and labrador",
+		"yukon",
+		"northwest territories",
+		"nunavut"
+	],
+	"capitals": {
+		"British Columbia": {
+			"capital": "Victoria",
+			"lat": 48.4284,
+			"lon": -123.3656
+		},
+		"Alberta": {
+			"capital": "Edmonton",
+			"lat": 53.5461,
+			"lon": -113.4909
+		},
+		"Saskatchewan": {
+			"capital": "Regina",
+			"lat": 50.4452,
+			"lon": -104.6178
+		},
+		"Manitoba": {
+			"capital": "Winnipeg",
+			"lat": 49.8951,
+			"lon": -97.1384
+		},
+		"Ontario": {
+			"capital": "Toronto",
+			"lat": 43.6532,
+			"lon": -79.3832
+		},
+		"Quebec": {
+			"capital": "Quebec City",
+			"lat": 46.8139,
+			"lon": -71.2080
+		},
+		"New Brunswick": {
+			"capital": "Fredericton",
+			"lat": 45.9636,
+			"lon": -66.6431
+		},
+		"Nova Scotia": {
+			"capital": "Halifax",
+			"lat": 44.6488,
+			"lon": -63.5752
+		},
+		"Prince Edward Island": {
+			"capital": "Charlottetown",
+			"lat": 46.2382,
+			"lon": -63.1311
+		},
+		"Newfoundland and Labrador": {
+			"capital": "St. John's",
+			"lat": 47.5615,
+			"lon": -52.7126
+		},
+		"Yukon": {
+			"capital": "Whitehorse",
+			"lat": 60.7212,
+			"lon": -135.0568
+		},
+		"Northwest Territories": {
+			"capital": "Yellowknife",
+			"lat": 62.4540,
+			"lon": -114.3717
+		},
+		"Nunavut": {
+			"capital": "Iqaluit",
+			"lat": 63.7467,
+			"lon": -68.5170
+		}
+	}
+}

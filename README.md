@@ -14,3 +14,9 @@ A lightweight browser quiz that helps you learn geography by guessing US states 
 ## Data sources
 - US states: https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json
 - Countries: https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json
+
+
+## TOOLS
+Simplyfy TOPO JSON https://mapshaper.org/
+
+Mexico : python tool to get and convert. Simplyfy wiht mapshaper

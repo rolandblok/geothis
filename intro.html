@@ -20,8 +20,16 @@
             <div class="chooser-buttons">
                 <button id="chooseCountryQuiz" class="chooser-btn">Country Quiz</button>
                 <button id="chooseCapitalQuiz" class="chooser-btn">Capital Quiz</button>
+                <button id="chooseStateQuiz" class="chooser-btn">State Quiz</button>
             </div>
             <button id="cancelChooser" class="chooser-cancel">✕</button>
+        </div>
+        <div id="countryChooser" class="quiz-chooser hidden">
+            <h2>Select Country</h2>
+            <div class="chooser-buttons" id="countryButtons">
+                <!-- Country buttons will be populated by JavaScript -->
+            </div>
+            <button id="cancelCountryChooser" class="chooser-cancel">✕</button>
         </div>
         <div id="quizPanel" class="quiz-panel hidden">
             <div class="quiz-header">
@@ -29,7 +37,7 @@
                 <button id="exitQuizBtn" title="Exit quiz">✕</button>
             </div>
             <div class="quiz-content">
-                <div id="quizPrompt" class="quiz-prompt">Click on:</div>
+                <div id="quizPrompt" class="quiz-prompt"></div>
                 <div id="countryName" class="country-name"></div>
                 <div id="feedback" class="feedback"></div>
                 <div class="quiz-stats">
