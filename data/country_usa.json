@@ -19,6 +19,7 @@
 		"colorado",
 		"connecticut",
 		"delaware",
+		"district of columbia",
 		"florida",
 		"georgia",
 		"hawaii",
@@ -102,6 +103,11 @@
 			"capital": "Dover",
 			"lat": 39.157307,
 			"lon": -75.519722
+		},
+		"District of Columbia": {
+			"capital": "Washington, D.C.",
+			"lat": 38.9072,
+			"lon": -77.0369
 		},
 		"Florida": {
 			"capital": "Tallahassee",

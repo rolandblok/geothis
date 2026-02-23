@@ -507,6 +507,7 @@ async function loadStatesData(countryCode, title) {
         globe.pointOfView(view, 1000);
         
         console.log(`${countryCode.toUpperCase()} states/provinces loaded:`, stateData.length);
+        console.log('States:', stateData.map(s => s.properties.name).join(', '));
         
     } catch (error) {
         console.error(`Error loading ${countryCode} data:`, error);
@@ -656,6 +657,8 @@ async function startQuiz(continentCode, mode) {
     }
     
     remainingCountries = [...continentCountries];
+    console.log(`Starting ${mode} quiz for ${continentNames[continentCode]} with ${remainingCountries.length} countries`);
+    console.log(`Countries: ${remainingCountries.map(c => c.properties.name).join(', ')}`);
     answeredCountries.clear();
     wrongCountries.clear();
     score = 0;
