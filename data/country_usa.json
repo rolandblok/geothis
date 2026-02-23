@@ -6,10 +6,10 @@
 		"maxLat": 71.4
 	},
 	"center": {
-		"lat": 40.0,
-		"lon": -100.0
+		"lat": 35.0,
+		"lon": -108.0
 	},
-	"zoom": 1.5,
+	"zoom": 0.92,
 	"states": [
 		"alabama",
 		"alaska",
