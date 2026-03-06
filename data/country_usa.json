@@ -10,6 +10,8 @@
 		"lon": -108.0
 	},
 	"zoom": 0.92,
+	"topoObjects": ["states", "usa"],
+	"nameProps": ["NAME", "name", "State", "state", "NAME_EN", "STUSPS", "GEOID"],
 	"states": [
 		"alabama",
 		"alaska",

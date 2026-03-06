@@ -10,6 +10,8 @@
 		"lon": -102.0
 	},
 	"zoom": 0.51,
+	"topoObjects": ["states", "mexico"],
+	"nameProps": ["state_name", "NAME", "NAME_1", "ESTADO", "name", "State", "state", "NAME_EN", "NOM_ENT"],
 	"states": [
 		"aguascalientes",
 		"baja california",

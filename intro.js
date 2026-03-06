@@ -5,7 +5,7 @@ let continentData = [];
 
 // Unified Quiz State
 let quizActive = false;
-let quizMode = 'country';    // 'country', 'capital', or 'state'
+let quizMode = 'country';    // 'country', 'capital', 'state', or 'state-capital'
 let currentContinent = null; // active continent code (country/capital quiz)
 let stateData = [];          // loaded state boundaries (state quiz)
 let quizItems = [];          // all items for current quiz (countries or states)
@@ -15,6 +15,15 @@ let wrongItems = new Set();
 let score = 0;
 let questionCount = 0;
 let capitalData = {};
+let pickingCountry = false;  // true when waiting for user to click a country on the globe
+let pickingCountryMode = 'state';
+
+// Countries available for state/province quiz, keyed by their WorldAtlas name
+const stateQuizCountryMap = {
+    'United States of America': 'usa',
+    'Canada': 'canada',
+    'Mexico': 'mexico'
+};
 
 // Translations
 const translations = {
@@ -201,6 +210,25 @@ fetch('//cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
 function handlePolygonHover(polygon) {
     hoveredContinent = polygon;
 
+    if (pickingCountry) {
+        const isPickable = polygon && stateQuizCountryMap[polygon.properties.name];
+        document.body.style.cursor = isPickable ? 'pointer' : 'default';
+        globe
+            .polygonAltitude(d => {
+                if (stateQuizCountryMap[d.properties.name]) {
+                    return d === polygon ? altitudes.selected * 1.5 : altitudes.selected;
+                }
+                return altitudes.normal;
+            })
+            .polygonCapColor(d => {
+                if (!stateQuizCountryMap[d.properties.name]) return 'rgba(100, 100, 100, 0.15)';
+                const continent = d.properties.continent;
+                if (d === polygon) return continentColors[continent]?.hover || 'rgba(147, 197, 253, 1)';
+                return continentColors[continent]?.normal || 'rgba(74, 222, 128, 0.7)';
+            });
+        return;
+    }
+
     if (quizActive) {
         document.body.style.cursor = polygon && polygon.properties.continent === currentContinent ? 'pointer' : 'default';
         return;
@@ -235,6 +263,13 @@ function handlePolygonHover(polygon) {
 
 // Handle polygon click (country quiz)
 function handlePolygonClick(polygon) {
+    if (pickingCountry) {
+        if (polygon && stateQuizCountryMap[polygon.properties.name]) {
+            cancelPickCountry();
+            startStateQuiz(stateQuizCountryMap[polygon.properties.name], pickingCountryMode);
+        }
+        return;
+    }
     if (quizActive && polygon && polygon.properties.continent === currentContinent) {
         checkQuizAnswer(polygon);
         return;
@@ -295,62 +330,54 @@ function hideQuizChooser() {
     globe.pointOfView({ lat: 20, lng: currentLng, altitude: 1.8 }, 1000);
 }
 
-// Show country selection for state quiz
-function showCountrySelection(continentCode) {
-    // Hide quiz chooser
+// Enter globe-click mode for picking a country to start a state quiz
+function showCountrySelection(continentCode, mode = 'state') {
     document.getElementById('quizChooser').classList.add('hidden');
-    
-    // Show country chooser
-    const countryChooser = document.getElementById('countryChooser');
-    const countryButtons = document.getElementById('countryButtons');
-    
-    // Clear existing buttons
-    countryButtons.innerHTML = '';
-    
-    // For now, only support USA, Canada, and Mexico in North America
-    if (continentCode === 'na') {
-        const countries = [
-            { code: 'usa', name: 'United States' },
-            { code: 'canada', name: 'Canada' },
-            { code: 'mexico', name: 'Mexico' }
-        ];
-        
-        countries.forEach(country => {
-            const button = document.createElement('button');
-            button.className = 'chooser-btn';
-            button.textContent = country.name;
-            button.addEventListener('click', () => {
-                startStateQuiz(country.code);
-            });
-            countryButtons.appendChild(button);
-
-            const capBtn = document.createElement('button');
-            capBtn.className = 'chooser-btn';
-            capBtn.textContent = country.name + ' – Capitals';
-            capBtn.addEventListener('click', () => {
-                startStateQuiz(country.code, 'state-capital');
-            });
-            countryButtons.appendChild(capBtn);
-        });
-    }
-    
-    countryChooser.classList.remove('hidden');
+    document.getElementById('quizChooserOverlay').classList.add('hidden');
+    pickingCountry = true;
+    pickingCountryMode = mode;
+    document.getElementById('pickCountryHint').classList.remove('hidden');
+    globe.controls().autoRotate = false;
+    globe.controls().enableRotate = false;
+    // Highlight pickable countries, dim the rest
+    globe
+        .polygonCapColor(d => {
+            if (!stateQuizCountryMap[d.properties.name]) return 'rgba(100, 100, 100, 0.15)';
+            const continent = d.properties.continent;
+            return continentColors[continent]?.normal || 'rgba(74, 222, 128, 0.7)';
+        })
+        .polygonAltitude(d => stateQuizCountryMap[d.properties.name]
+            ? altitudes.selected
+            : altitudes.normal)
+        .polygonLabel(d => stateQuizCountryMap[d.properties.name]
+            ? `<div style="background: rgba(0,0,0,0.8); padding: 8px 12px; border-radius: 4px; color: white; font-family: sans-serif;">${d.properties.name}</div>`
+            : '');
 }
 
-// Hide country chooser
-function hideCountryChooser() {
-    document.getElementById('countryChooser').classList.add('hidden');
-    document.getElementById('quizChooserOverlay').classList.add('hidden');
+// Cancel country-picking mode and restore globe
+function cancelPickCountry() {
+    pickingCountry = false;
     currentContinent = null;
+    document.getElementById('pickCountryHint').classList.add('hidden');
     globe.controls().autoRotate = true;
+    globe
+        .polygonAltitude(altitudes.normal)
+        .polygonCapColor(d => {
+            const continent = d.properties.continent;
+            if (!continent) return 'rgba(100, 100, 100, 0.3)';
+            return continentColors[continent].normal;
+        })
+        .polygonLabel(d => {
+            const continent = d.properties.continent;
+            if (!continent) return '';
+            return `<div style="background: rgba(0,0,0,0.8); padding: 8px 12px; border-radius: 4px; color: white; font-family: sans-serif;">${t(continentNames[continent])}</div>`;
+        });
     const currentLng = globe.pointOfView().lng;
     globe.pointOfView({ lat: 20, lng: currentLng, altitude: 1.8 }, 1000);
 }
 
 // Start state quiz for a country (delegates to unified startQuiz)
 async function startStateQuiz(countryCode, mode = 'state') {
-    document.getElementById('countryChooser').classList.add('hidden');
-    document.getElementById('quizChooserOverlay').classList.add('hidden');
     globe.controls().autoRotate = false;
     globe.controls().enableRotate = false;
     const titles = {
@@ -363,30 +390,15 @@ async function startStateQuiz(countryCode, mode = 'state') {
         startQuiz(null, mode, stateData);
     } catch (error) {
         console.error('Error starting state quiz:', error);
-        hideCountryChooser();
+        cancelPickCountry();
     }
 }
 
 // Country configurations for state/province loading
 const countryConfigs = {
-    usa: {
-        configFile: 'data/country_usa.json',
-        topoFile: './data/country_usa_TopoJSON.json',
-        topoObjects: ['states', 'usa'],
-        nameProps: ['NAME', 'name', 'State', 'state', 'NAME_EN', 'STUSPS', 'GEOID']
-    },
-    canada: {
-        configFile: 'data/country_canada.json', 
-        topoFile: './data/country_canada_TopoJSON.json',
-        topoObjects: ['provinces', 'canada'],
-        nameProps: ['NAME', 'PRENAME', 'PROVINCE', 'name', 'Province', 'province', 'NAME_EN', 'NAME_1']
-    },
-    mexico: {
-        configFile: 'data/country_mexico.json',
-        topoFile: './data/country_mexico_TopoJSON.json', 
-        topoObjects: ['states', 'mexico'],
-        nameProps: ['state_name', 'NAME', 'NAME_1', 'ESTADO', 'name', 'State', 'state', 'NAME_EN', 'NOM_ENT']
-    }
+    usa:    { configFile: 'data/country_usa.json',    topoFile: './data/country_usa_TopoJSON.json' },
+    canada: { configFile: 'data/country_canada.json', topoFile: './data/country_canada_TopoJSON.json' },
+    mexico: { configFile: 'data/country_mexico.json', topoFile: './data/country_mexico_TopoJSON.json' }
 };
 
 // Load states/provinces data for a country
@@ -407,8 +419,12 @@ async function loadStatesData(countryCode, title) {
         const topology = await topoResponse.json();
         
         // Find the correct TopoJSON object
+        const topoObjects = countryConfigData.topoObjects || [];
+        const nameProps = countryConfigData.nameProps || ['NAME', 'name'];
+        const allowList = countryConfigData.states || countryConfigData.provinces || null;
+
         let topoObject = null;
-        for (const objName of config.topoObjects) {
+        for (const objName of topoObjects) {
             if (topology.objects[objName]) {
                 topoObject = topology.objects[objName];
                 break;
@@ -429,7 +445,7 @@ async function loadStatesData(countryCode, title) {
             
             // Try property names in order of preference
             let stateName = 'Unknown';
-            for (const propName of config.nameProps) {
+            for (const propName of nameProps) {
                 if (props[propName]) {
                     stateName = props[propName];
                     break;
@@ -448,7 +464,11 @@ async function loadStatesData(countryCode, title) {
                     capitalCoords: capitalInfo ? [capitalInfo.lon, capitalInfo.lat] : null
                 }
             };
-        }).filter(feat => feat.properties.name !== 'Unknown' && feat.geometry && feat.geometry.type);
+        }).filter(feat =>
+            feat.properties.name !== 'Unknown' &&
+            feat.geometry && feat.geometry.type &&
+            (!allowList || allowList.includes(feat.properties.name.toLowerCase()))
+        );
         
         // Set the quiz title
         document.getElementById('continentTitle').textContent = title;
@@ -795,7 +815,11 @@ document.getElementById('chooseCapitalQuiz').addEventListener('click', () => {
 });
 
 document.getElementById('chooseStateQuiz').addEventListener('click', () => {
-    showCountrySelection(currentContinent);
+    showCountrySelection(currentContinent, 'state');
+});
+
+document.getElementById('chooseStateCapitalQuiz').addEventListener('click', () => {
+    showCountrySelection(currentContinent, 'state-capital');
 });
 
 document.getElementById('cancelChooser').addEventListener('click', () => {
@@ -806,6 +830,6 @@ document.getElementById('quizChooserOverlay').addEventListener('click', () => {
     hideQuizChooser();
 });
 
-document.getElementById('cancelCountryChooser').addEventListener('click', () => {
-    hideCountryChooser();
+document.getElementById('cancelPickCountry').addEventListener('click', () => {
+    cancelPickCountry();
 });

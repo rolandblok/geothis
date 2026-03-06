@@ -10,6 +10,8 @@
 		"lon": -82.0
 	},
 	"zoom": 0.8,
+	"topoObjects": ["provinces", "canada"],
+	"nameProps": ["NAME", "PRENAME", "PROVINCE", "name", "Province", "province", "NAME_EN", "NAME_1"],
 	"provinces": [
 		"british columbia",
 		"alberta", 

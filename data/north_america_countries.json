@@ -7,9 +7,9 @@
 	},
 	"center": {
 		"lat": 45,
-		"lon": -100
+		"lon": -104
 	},
-	"zoom": 1.5,
+	"zoom": 1.1,
 	"countries": [
 		"canada",
 		"united states of america",

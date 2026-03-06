@@ -21,15 +21,13 @@
                 <button id="chooseCountryQuiz" class="chooser-btn">Country Quiz</button>
                 <button id="chooseCapitalQuiz" class="chooser-btn">Capital Quiz</button>
                 <button id="chooseStateQuiz" class="chooser-btn">State Quiz</button>
+                <button id="chooseStateCapitalQuiz" class="chooser-btn">State Capitals Quiz</button>
             </div>
             <button id="cancelChooser" class="chooser-cancel">✕</button>
         </div>
-        <div id="countryChooser" class="quiz-chooser hidden">
-            <h2>Select Country</h2>
-            <div class="chooser-buttons" id="countryButtons">
-                <!-- Country buttons will be populated by JavaScript -->
-            </div>
-            <button id="cancelCountryChooser" class="chooser-cancel">✕</button>
+        <div id="pickCountryHint" class="pick-country-hint hidden">
+            <span>Click a country on the map</span>
+            <button id="cancelPickCountry" class="chooser-cancel">✕ Cancel</button>
         </div>
         <div id="quizPanel" class="quiz-panel hidden">
             <div class="quiz-header">
