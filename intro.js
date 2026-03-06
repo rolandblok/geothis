@@ -251,7 +251,7 @@ function handleStateHover(polygon) {
 
 // Handle state polygon click
 function handleStateClick(polygon) {
-    if (!quizActive || quizMode !== 'state' || !polygon) return;
+    if (!quizActive || (quizMode !== 'state' && quizMode !== 'state-capital') || !polygon) return;
     checkQuizAnswer(polygon);
 }
 
@@ -323,6 +323,14 @@ function showCountrySelection(continentCode) {
                 startStateQuiz(country.code);
             });
             countryButtons.appendChild(button);
+
+            const capBtn = document.createElement('button');
+            capBtn.className = 'chooser-btn';
+            capBtn.textContent = country.name + ' – Capitals';
+            capBtn.addEventListener('click', () => {
+                startStateQuiz(country.code, 'state-capital');
+            });
+            countryButtons.appendChild(capBtn);
         });
     }
     
@@ -340,15 +348,19 @@ function hideCountryChooser() {
 }
 
 // Start state quiz for a country (delegates to unified startQuiz)
-async function startStateQuiz(countryCode) {
+async function startStateQuiz(countryCode, mode = 'state') {
     document.getElementById('countryChooser').classList.add('hidden');
     document.getElementById('quizChooserOverlay').classList.add('hidden');
     globe.controls().autoRotate = false;
     globe.controls().enableRotate = false;
-    const titles = { usa: 'United States – States', canada: 'Canada – Provinces', mexico: 'Mexico – States' };
+    const titles = {
+        usa:    { state: 'United States – States',   'state-capital': 'United States – State Capitals' },
+        canada: { state: 'Canada – Provinces',       'state-capital': 'Canada – Province Capitals' },
+        mexico: { state: 'Mexico – States',          'state-capital': 'Mexico – State Capitals' }
+    };
     try {
-        await loadStatesData(countryCode, titles[countryCode] || countryCode);
-        startQuiz(null, 'state', stateData);
+        await loadStatesData(countryCode, titles[countryCode]?.[mode] || countryCode);
+        startQuiz(null, mode, stateData);
     } catch (error) {
         console.error('Error starting state quiz:', error);
         hideCountryChooser();
@@ -496,7 +508,7 @@ async function startQuiz(continentCode, mode, items = null) {
     score = 0;
     questionCount = 0;
 
-    if (mode !== 'state') {
+    if (mode !== 'state' && mode !== 'state-capital') {
         // Hide continent chooser
         document.getElementById('quizChooser').classList.add('hidden');
         document.getElementById('quizChooserOverlay').classList.add('hidden');
@@ -519,6 +531,8 @@ async function startQuiz(continentCode, mode, items = null) {
     // Build quiz items list
     if (mode === 'state') {
         quizItems = items || stateData;
+    } else if (mode === 'state-capital') {
+        quizItems = (items || stateData).filter(d => d.properties.capitalCoords);
     } else {
         quizItems = continentData.filter(d => d.properties.continent === continentCode);
         if (mode === 'capital') {
@@ -527,7 +541,7 @@ async function startQuiz(continentCode, mode, items = null) {
     }
 
     // Set quiz title
-    if (mode === 'state') {
+    if (mode === 'state' || mode === 'state-capital') {
         // Title already set by loadStatesData
     } else {
         const modeLabel = mode === 'capital' ? ' – Capitals' : ' – Countries';
@@ -542,7 +556,7 @@ async function startQuiz(continentCode, mode, items = null) {
     document.getElementById('feedback').className = 'feedback';
 
     // Center view
-    if (mode !== 'state' && defaultCenters[continentCode]) {
+    if (mode !== 'state' && mode !== 'state-capital' && defaultCenters[continentCode]) {
         globe.pointOfView({
             lat: defaultCenters[continentCode].lat,
             lng: defaultCenters[continentCode].lon,
@@ -551,24 +565,25 @@ async function startQuiz(continentCode, mode, items = null) {
     }
 
     // Configure globe polygons
-    if (mode === 'state') {
+    if (mode === 'state' || mode === 'state-capital') {
         // Globe already configured with state polygons in loadStatesData
     } else {
         updateQuizColors();
     }
 
-    // Show capital dots for capital quiz
-    if (mode === 'capital') {
-        const capitalPoints = quizItems
-            .filter(d => capitalData[d.properties.name])
-            .map(d => {
-                const cap = capitalData[d.properties.name];
-                return { lat: cap.lat, lng: cap.lon, name: cap.capital, country: d.properties.name, size: 0.3, color: capitalColors.normal };
-            });
+    // Show capital dots for capital and state-capital quizzes
+    if (mode === 'capital' || mode === 'state-capital') {
+        const capitalPoints = quizItems.map(d => {
+            const isState = mode === 'state-capital';
+            const lat  = isState ? d.properties.capitalCoords[1] : capitalData[d.properties.name].lat;
+            const lng  = isState ? d.properties.capitalCoords[0] : capitalData[d.properties.name].lon;
+            const name = isState ? d.properties.capital          : capitalData[d.properties.name].capital;
+            return { lat, lng, name, key: d.properties.name, size: 0.3, color: capitalColors.normal };
+        });
         globe
             .pointsData(capitalPoints)
             .pointAltitude(d => {
-                const base = answeredItems.has(d.country) || wrongItems.has(d.country) ? altitudes.answered : altitudes.selected;
+                const base = answeredItems.has(d.key) || wrongItems.has(d.key) ? altitudes.answered : altitudes.selected;
                 return base + (altitudes.capitalOffset || 0);
             })
             .pointRadius('size')
@@ -576,10 +591,10 @@ async function startQuiz(continentCode, mode, items = null) {
             .pointLabel(() => '')
             .pointsTransitionDuration(300)
             .onPointClick(point => {
-                const polygon = quizItems.find(d => d.properties.name === point.country);
-                if (polygon) checkQuizAnswer(polygon);
+                const item = quizItems.find(d => d.properties.name === point.key);
+                if (item) checkQuizAnswer(item);
             });
-    } else if (mode !== 'state') {
+    } else {
         globe.pointsData([]);
     }
 
@@ -606,10 +621,12 @@ function pickNextQuestion() {
     document.getElementById('feedback').textContent = '';
     document.getElementById('feedback').className = 'feedback';
 
-    if (quizMode === 'capital') {
-        const cap = capitalData[currentQuestion.properties.name];
+    if (quizMode === 'capital' || quizMode === 'state-capital') {
+        const capName = quizMode === 'capital'
+            ? capitalData[currentQuestion.properties.name]?.capital
+            : currentQuestion.properties.capital;
         document.getElementById('quizPrompt').textContent = '';
-        document.getElementById('countryName').textContent = cap ? cap.capital : currentQuestion.properties.name;
+        document.getElementById('countryName').textContent = capName || currentQuestion.properties.name;
     } else {
         document.getElementById('quizPrompt').textContent = '';
         document.getElementById('countryName').textContent = currentQuestion.properties.name;
@@ -631,9 +648,11 @@ function checkQuizAnswer(clickedItem) {
         updateQuizColors();
         setTimeout(() => pickNextQuestion(), 1000);
     } else {
-        if (quizMode === 'capital') {
-            const cap = capitalData[currentQuestion.properties.name];
-            feedbackEl.textContent = `✗ Wrong! ${cap ? cap.capital : ''} is the capital of ${currentQuestion.properties.name}`;
+        if (quizMode === 'capital' || quizMode === 'state-capital') {
+            const capName = quizMode === 'capital'
+                ? capitalData[currentQuestion.properties.name]?.capital || ''
+                : currentQuestion.properties.capital;
+            feedbackEl.textContent = `✗ Wrong! ${capName} is the capital of ${currentQuestion.properties.name}`;
         } else {
             feedbackEl.textContent = `✗ Wrong! That was ${clickedItem.properties.name}`;
         }
@@ -646,7 +665,7 @@ function checkQuizAnswer(clickedItem) {
 
 // Update polygon (and point) colors based on current quiz state
 function updateQuizColors() {
-    if (quizMode === 'state') {
+    if (quizMode === 'state' || quizMode === 'state-capital') {
         globe.polygonAltitude(d => {
             if (answeredItems.has(d.properties.name) || wrongItems.has(d.properties.name)) return altitudes.answered;
             return altitudes.selected;
@@ -673,25 +692,25 @@ function updateQuizColors() {
             }
             return continentColors[continent].normal;
         });
+    }
 
-        // Update capital dot colors
-        if (quizActive && quizMode === 'capital') {
-            globe.pointAltitude(d => {
-                const base = answeredItems.has(d.country) || wrongItems.has(d.country) ? altitudes.answered : altitudes.selected;
-                return base + (altitudes.capitalOffset || 0);
-            }).pointColor(d => {
-                if (answeredItems.has(d.country)) return capitalColors.correct;
-                if (wrongItems.has(d.country)) return capitalColors.wrong;
-                return capitalColors.normal;
-            });
-        }
+    // Update capital dot colors for capital and state-capital quizzes
+    if (quizActive && (quizMode === 'capital' || quizMode === 'state-capital')) {
+        globe.pointAltitude(d => {
+            const base = answeredItems.has(d.key) || wrongItems.has(d.key) ? altitudes.answered : altitudes.selected;
+            return base + (altitudes.capitalOffset || 0);
+        }).pointColor(d => {
+            if (answeredItems.has(d.key)) return capitalColors.correct;
+            if (wrongItems.has(d.key)) return capitalColors.wrong;
+            return capitalColors.normal;
+        });
     }
 }
 
 // Exit quiz
 function exitQuiz() {
     quizActive = false;
-    const wasStateMode = quizMode === 'state';
+    const wasStateMode = quizMode === 'state' || quizMode === 'state-capital';
 
     currentContinent = null;
     currentQuestion = null;

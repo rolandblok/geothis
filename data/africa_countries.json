@@ -8,7 +8,9 @@
 	"center": {
 		"lat": 1.5,
 		"lon": 17
-	},	"zoom": 1.5,	"countries": [
+	},	
+	"zoom": 1.5,	
+	"countries": [
 		"algeria",
 		"angola",
 		"benin",

@@ -12,7 +12,6 @@
 	"zoom": 1.5,
 	"countries": [
 		"canada",
-		"united states",
 		"united states of america",
 		"mexico",
 		"greenland"
@@ -22,11 +21,6 @@
 			"capital": "Ottawa",
 			"lat": 45.4215,
 			"lon": -75.6972
-		},
-		"United States": {
-			"capital": "Washington, D.C.",
-			"lat": 38.9072,
-			"lon": -77.0369
 		},
 		"United States of America": {
 			"capital": "Washington, D.C.",
