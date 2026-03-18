@@ -22,7 +22,8 @@ let pickingCountryMode = 'state';
 const stateQuizCountryMap = {
     'United States of America': 'usa',
     'Canada': 'canada',
-    'Mexico': 'mexico'
+    'Mexico': 'mexico',
+    'Netherlands': 'nl'
 };
 
 // Translations
@@ -296,13 +297,10 @@ function showQuizChooser(continentCode) {
     const chooser = document.getElementById('quizChooser');
     document.getElementById('chooserTitle').textContent = continentNames[continentCode];
     
-    // Show/hide state quiz button based on continent
-    const stateQuizBtn = document.getElementById('chooseStateQuiz');
-    if (continentCode === 'na') {
-        stateQuizBtn.style.display = 'block';
-    } else {
-        stateQuizBtn.style.display = 'none';
-    }
+    // Show/hide state quiz buttons based on continent
+    const hasStateQuiz = continentCode === 'na' || continentCode === 'eu';
+    document.getElementById('chooseStateQuiz').style.display = hasStateQuiz ? 'block' : 'none';
+    document.getElementById('chooseStateCapitalQuiz').style.display = hasStateQuiz ? 'block' : 'none';
     
     chooser.classList.remove('hidden');
     document.getElementById('quizChooserOverlay').classList.remove('hidden');
@@ -381,9 +379,10 @@ async function startStateQuiz(countryCode, mode = 'state') {
     globe.controls().autoRotate = false;
     globe.controls().enableRotate = false;
     const titles = {
-        usa:    { state: 'United States – States',   'state-capital': 'United States – State Capitals' },
-        canada: { state: 'Canada – Provinces',       'state-capital': 'Canada – Province Capitals' },
-        mexico: { state: 'Mexico – States',          'state-capital': 'Mexico – State Capitals' }
+        usa:    { state: 'United States – States',      'state-capital': 'United States – State Capitals' },
+        canada: { state: 'Canada – Provinces',          'state-capital': 'Canada – Province Capitals' },
+        mexico: { state: 'Mexico – States',             'state-capital': 'Mexico – State Capitals' },
+        nl:     { state: 'Netherlands – Provinces',     'state-capital': 'Netherlands – Province Capitals' }
     };
     try {
         await loadStatesData(countryCode, titles[countryCode]?.[mode] || countryCode);
@@ -398,7 +397,8 @@ async function startStateQuiz(countryCode, mode = 'state') {
 const countryConfigs = {
     usa:    { configFile: 'data/country_usa.json',    topoFile: './data/country_usa_TopoJSON.json' },
     canada: { configFile: 'data/country_canada.json', topoFile: './data/country_canada_TopoJSON.json' },
-    mexico: { configFile: 'data/country_mexico.json', topoFile: './data/country_mexico_TopoJSON.json' }
+    mexico: { configFile: 'data/country_mexico.json', topoFile: './data/country_mexico_TopoJSON.json' },
+    nl:     { configFile: 'data/country_nl.json',     topoFile: './data/country_nl_TopoJSON.json' }
 };
 
 // Load states/provinces data for a country
@@ -598,7 +598,7 @@ async function startQuiz(continentCode, mode, items = null) {
             const lat  = isState ? d.properties.capitalCoords[1] : capitalData[d.properties.name].lat;
             const lng  = isState ? d.properties.capitalCoords[0] : capitalData[d.properties.name].lon;
             const name = isState ? d.properties.capital          : capitalData[d.properties.name].capital;
-            return { lat, lng, name, key: d.properties.name, size: 0.3, color: capitalColors.normal };
+            return { lat, lng, name, key: d.properties.name, color: capitalColors.normal };
         });
         globe
             .pointsData(capitalPoints)
@@ -606,7 +606,7 @@ async function startQuiz(continentCode, mode, items = null) {
                 const base = answeredItems.has(d.key) || wrongItems.has(d.key) ? altitudes.answered : altitudes.selected;
                 return base + (altitudes.capitalOffset || 0);
             })
-            .pointRadius('size')
+            .pointRadius(() => globe.pointOfView().altitude * 0.2)
             .pointColor('color')
             .pointLabel(() => '')
             .pointsTransitionDuration(300)

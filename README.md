@@ -17,6 +17,10 @@ A lightweight browser quiz that helps you learn geography by guessing US states 
 
 
 ## TOOLS
-Simplyfy TOPO JSON https://mapshaper.org/
+[Simplyfy TOPO JSON](https://mapshaper.org/)
+
+[jsonformatter.org](jsonformatter.org)
 
 Mexico : python tool to get and convert. Simplyfy wiht mapshaper
+
+[favicon.io](https://favicon.io/favicon-converter/)
