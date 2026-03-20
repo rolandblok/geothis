@@ -17,6 +17,8 @@ A lightweight browser quiz that helps you learn geography by guessing US states 
 
 
 ## TOOLS
+[globe.gl](https://globe.gl/)
+
 [Simplyfy TOPO JSON](https://mapshaper.org/)
 
 [jsonformatter.org](jsonformatter.org)

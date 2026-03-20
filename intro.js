@@ -112,7 +112,7 @@ const continentZoom = {};
 const defaultZoom = 1.5;
 
 // Pre-load center and zoom levels from all continent data files
-Promise.all(
+const continentDataReady = Promise.all(
     Object.entries(continentDataFiles).map(([code, file]) =>
         fetch(file)
             .then(res => res.json())
@@ -120,7 +120,7 @@ Promise.all(
                 if (data.center !== undefined) defaultCenters[code] = { lat: data.center.lat, lon: data.center.lon };
                 if (data.zoom !== undefined) continentZoom[code] = data.zoom;
             })
-            .catch(() => {})
+            .catch(e => console.error(`Failed to load continent data for ${code}:`, e))
     )
 );
 
@@ -520,6 +520,7 @@ async function loadStatesData(countryCode, title) {
 // Start quiz - unified entry point for country, capital and state quizzes.
 // continentCode is set for country/capital quizzes; items is already loaded for state quiz.
 async function startQuiz(continentCode, mode, items = null) {
+    await continentDataReady;
     quizActive = true;
     quizMode = mode;
     currentContinent = continentCode;
@@ -583,7 +584,9 @@ async function startQuiz(continentCode, mode, items = null) {
             altitude: continentZoom[continentCode] ?? defaultZoom
         }, 1000);
     }
-
+    console.log('globe.pointOfView()', globe.pointOfView());
+    console.log('continentZoom[continentCode]', continentZoom[continentCode]);
+    console.log('continentCode', continentCode);
     // Configure globe polygons
     if (mode === 'state' || mode === 'state-capital') {
         // Globe already configured with state polygons in loadStatesData
