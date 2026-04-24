@@ -9,7 +9,9 @@ A lightweight browser quiz that helps you learn geography by guessing US states 
 - Persistent coloring for correct/incorrect answers
 
 ## Run 
-[Open index.html in your browser.](https://raw.githack.com/rolandblok/geothis/master/index.html)
+[V1.0](https://rawcdn.githack.com/rolandblok/geothis/v1.0/index.html)
+
+[unstable](https://raw.githack.com/rolandblok/geothis/master/index.html)
 
 ## Data sources
 - US states: https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json
