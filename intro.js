@@ -231,7 +231,27 @@ function handlePolygonHover(polygon) {
     }
 
     if (quizActive) {
-        document.body.style.cursor = polygon && polygon.properties.continent === currentContinent ? 'pointer' : 'default';
+        const inContinent = polygon && polygon.properties.continent === currentContinent;
+        document.body.style.cursor = inContinent ? 'pointer' : 'default';
+        if (quizMode === 'country' || quizMode === 'capital') {
+            globe.polygonAltitude(d => {
+                if (!d.properties.continent) return altitudes.normal;
+                if (d.properties.continent !== currentContinent) return altitudes.normal;
+                if (answeredItems.has(d.properties.name) || wrongItems.has(d.properties.name)) return altitudes.answered;
+                if (d === polygon) return altitudes.selected * 2;
+                return altitudes.selected;
+            });
+            if (quizMode === 'capital') {
+                globe.pointAltitude(d => {
+                    const isHovered = polygon && d.key === polygon.properties.name;
+                    const isAnswered = answeredItems.has(d.key) || wrongItems.has(d.key);
+                    const base = isAnswered ? altitudes.answered
+                               : isHovered  ? altitudes.selected * 2
+                               :              altitudes.selected;
+                    return base + (altitudes.capitalOffset || 0);
+                });
+            }
+        }
         return;
     }
 
@@ -674,8 +694,10 @@ async function startQuiz(continentCode, mode, items = null) {
         globe
             .pointsData(capitalPoints)
             .pointAltitude(d => {
-                const base = answeredItems.has(d.key) || wrongItems.has(d.key) ? stateAnsweredAltitude() : stateAltitude();
-                return base + (altitudes.capitalOffset || 0) * (globe.pointOfView().altitude / defaultZoom);
+                const isAnswered = answeredItems.has(d.key) || wrongItems.has(d.key);
+                const base = isAnswered ? (quizMode === 'capital' ? altitudes.answered : stateAnsweredAltitude())
+                                        : (quizMode === 'capital' ? altitudes.selected  : stateAltitude());
+                return base + (altitudes.capitalOffset || 0) * (quizMode === 'state-capital' ? globe.pointOfView().altitude / defaultZoom : 1);
             })
             .pointRadius(() => globe.pointOfView().altitude * 0.2)
             .pointColor('color')
@@ -695,8 +717,10 @@ async function startQuiz(continentCode, mode, items = null) {
             globe
                 .pointRadius(() => globe.pointOfView().altitude * 0.2)
                 .pointAltitude(d => {
-                    const base = answeredItems.has(d.key) || wrongItems.has(d.key) ? stateAnsweredAltitude() : stateAltitude();
-                    return base + (altitudes.capitalOffset || 0) * (globe.pointOfView().altitude / defaultZoom);
+                    const isAnswered = answeredItems.has(d.key) || wrongItems.has(d.key);
+                    const base = isAnswered ? (quizMode === 'capital' ? altitudes.answered : stateAnsweredAltitude())
+                                            : (quizMode === 'capital' ? altitudes.selected  : stateAltitude());
+                    return base + (altitudes.capitalOffset || 0) * (quizMode === 'state-capital' ? globe.pointOfView().altitude / defaultZoom : 1);
                 });
         }
         if (quizMode === 'state' || quizMode === 'state-capital') {
@@ -808,11 +832,23 @@ function updateQuizColors() {
         });
     }
 
-    // Update capital dot colors for capital and state-capital quizzes
+    // Update capital dot colors and altitudes for capital and state-capital quizzes
     if (quizActive && (quizMode === 'capital' || quizMode === 'state-capital')) {
         globe.pointAltitude(d => {
-            const base = answeredItems.has(d.key) || wrongItems.has(d.key) ? stateAnsweredAltitude() : stateAltitude();
-            return base + (altitudes.capitalOffset || 0) * (globe.pointOfView().altitude / defaultZoom);
+            const isAnswered = answeredItems.has(d.key) || wrongItems.has(d.key);
+            if (quizMode === 'capital') {
+                const isHovered = hoveredContinent && d.key === hoveredContinent.properties.name;
+                const base = isAnswered ? altitudes.answered
+                           : isHovered  ? altitudes.selected * 2
+                           :              altitudes.selected;
+                return base + (altitudes.capitalOffset || 0);
+            } else {
+                const isHovered = hoveredStatePolygon && d.key === hoveredStatePolygon.properties.name;
+                const base = isAnswered ? stateAnsweredAltitude()
+                           : isHovered  ? stateAltitude() * 2
+                           :              stateAltitude();
+                return base + (altitudes.capitalOffset || 0) * (globe.pointOfView().altitude / defaultZoom);
+            }
         }).pointColor(d => {
             if (answeredItems.has(d.key)) return capitalColors.correct;
             if (wrongItems.has(d.key)) return capitalColors.wrong;
