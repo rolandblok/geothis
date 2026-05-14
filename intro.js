@@ -280,15 +280,86 @@ function handlePolygonClick(polygon) {
     }
 }
 
-// Handle state polygon hover
-function handleStateHover(polygon) {
-    document.body.style.cursor = polygon ? 'pointer' : 'default';
+// State polygon altitudes scaled to camera zoom so parallax stays constant at any zoom level.
+// The answered/selected ratio is preserved so answered provinces always sit lower than unanswered ones.
+function stateAltitude() {
+    return globe.pointOfView().altitude * (altitudes.selected / defaultZoom);
+}
+function stateAnsweredAltitude() {
+    return globe.pointOfView().altitude * (altitudes.answered / defaultZoom);
 }
 
+// Point-in-polygon (ray-casting) for ground-level hover detection.
+// Avoids globe.gl's elevated-surface raycasting which causes border hysteresis.
+function pointInRing(point, ring) {
+    const [x, y] = point;
+    let inside = false;
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+        const [xi, yi] = ring[i];
+        const [xj, yj] = ring[j];
+        if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) inside = !inside;
+    }
+    return inside;
+}
+function pointInFeature(lng, lat, feature) {
+    const geom = feature.geometry;
+    if (!geom) return false;
+    const pt = [lng, lat];
+    const polys = geom.type === 'Polygon' ? [geom.coordinates]
+                : geom.type === 'MultiPolygon' ? geom.coordinates : [];
+    return polys.some(poly =>
+        pointInRing(pt, poly[0]) && poly.slice(1).every(hole => !pointInRing(pt, hole)));
+}
+
+// Handle state polygon hover – globe.gl calls this but we override with ground-level detection in mousemove
+let hoveredStatePolygon = null;
+function setHoveredState(polygon) {
+    if (polygon === hoveredStatePolygon) return;
+    hoveredStatePolygon = polygon;
+    document.body.style.cursor = polygon ? 'pointer' : 'default';
+    if (quizActive && (quizMode === 'state' || quizMode === 'state-capital')) {
+        globe.polygonAltitude(d => {
+            if (answeredItems.has(d.properties.name) || wrongItems.has(d.properties.name)) return stateAnsweredAltitude();
+            if (d === hoveredStatePolygon) return stateAltitude() * 2;
+            return stateAltitude();
+        });
+        if (quizMode === 'state-capital') {
+            globe.pointAltitude(d => {
+                const isHovered = hoveredStatePolygon && d.key === hoveredStatePolygon.properties.name;
+                const isAnswered = answeredItems.has(d.key) || wrongItems.has(d.key);
+                const base = isAnswered ? stateAnsweredAltitude()
+                           : isHovered  ? stateAltitude() * 2
+                           :              stateAltitude();
+                return base + (altitudes.capitalOffset || 0) * (globe.pointOfView().altitude / defaultZoom);
+            });
+        }
+    }
+}
+function handleStateHover(polygon) {
+    // Only used when not in state-quiz mode (no hysteresis concern then)
+    if (!quizActive || (quizMode !== 'state' && quizMode !== 'state-capital')) {
+        document.body.style.cursor = polygon ? 'pointer' : 'default';
+    }
+}
+
+// Continuous mouse-move: ground-level hover detection
+document.addEventListener('mousemove', e => {
+    // Ground-level hover for state quiz (eliminates elevated-surface hysteresis)
+    if (quizActive && (quizMode === 'state' || quizMode === 'state-capital') && stateData.length) {
+        if (typeof globe.toGlobeCoords === 'function') {
+            const gc = globe.toGlobeCoords(e.clientX, e.clientY);
+            const hit = gc ? stateData.find(d => pointInFeature(gc.lng, gc.lat, d)) ?? null : null;
+            setHoveredState(hit);
+        }
+    }
+});
+
 // Handle state polygon click
-function handleStateClick(polygon) {
-    if (!quizActive || (quizMode !== 'state' && quizMode !== 'state-capital') || !polygon) return;
-    checkQuizAnswer(polygon);
+function handleStateClick(polygon, event, coords) {
+    if (!quizActive || (quizMode !== 'state' && quizMode !== 'state-capital')) return;
+    const hit = hoveredStatePolygon || polygon;
+    if (!hit) return;
+    checkQuizAnswer(hit);
 }
 
 // Show quiz type chooser
@@ -476,7 +547,7 @@ async function loadStatesData(countryCode, title) {
         // Configure globe with state polygons
         globe
             .polygonsData(stateData)
-            .polygonAltitude(d => altitudes.selected)
+            .polygonAltitude(() => stateAltitude())
             .polygonCapColor(d => 'rgba(74, 222, 128, 0.7)')
             .polygonSideColor(() => borders.sideColor)
             .polygonStrokeColor(() => borders.strokeColor)
@@ -584,9 +655,6 @@ async function startQuiz(continentCode, mode, items = null) {
             altitude: continentZoom[continentCode] ?? defaultZoom
         }, 1000);
     }
-    console.log('globe.pointOfView()', globe.pointOfView());
-    console.log('continentZoom[continentCode]', continentZoom[continentCode]);
-    console.log('continentCode', continentCode);
     // Configure globe polygons
     if (mode === 'state' || mode === 'state-capital') {
         // Globe already configured with state polygons in loadStatesData
@@ -606,8 +674,8 @@ async function startQuiz(continentCode, mode, items = null) {
         globe
             .pointsData(capitalPoints)
             .pointAltitude(d => {
-                const base = answeredItems.has(d.key) || wrongItems.has(d.key) ? altitudes.answered : altitudes.selected;
-                return base + (altitudes.capitalOffset || 0);
+                const base = answeredItems.has(d.key) || wrongItems.has(d.key) ? stateAnsweredAltitude() : stateAltitude();
+                return base + (altitudes.capitalOffset || 0) * (globe.pointOfView().altitude / defaultZoom);
             })
             .pointRadius(() => globe.pointOfView().altitude * 0.2)
             .pointColor('color')
@@ -621,7 +689,24 @@ async function startQuiz(continentCode, mode, items = null) {
         globe.pointsData([]);
     }
 
-    setTimeout(() => pickNextQuestion(), 1000);
+    setTimeout(() => {
+        // Refresh point size and altitude now that the globe has finished zooming to the target altitude
+        if (quizMode === 'capital' || quizMode === 'state-capital') {
+            globe
+                .pointRadius(() => globe.pointOfView().altitude * 0.2)
+                .pointAltitude(d => {
+                    const base = answeredItems.has(d.key) || wrongItems.has(d.key) ? stateAnsweredAltitude() : stateAltitude();
+                    return base + (altitudes.capitalOffset || 0) * (globe.pointOfView().altitude / defaultZoom);
+                });
+        }
+        if (quizMode === 'state' || quizMode === 'state-capital') {
+            globe.polygonAltitude(d => {
+                if (answeredItems.has(d.properties.name) || wrongItems.has(d.properties.name)) return stateAnsweredAltitude();
+                return stateAltitude();
+            });
+        }
+        pickNextQuestion();
+    }, 1000);
 }
 
 // Pick next question (unified for country, capital and state quizzes)
@@ -672,10 +757,16 @@ function checkQuizAnswer(clickedItem) {
         setTimeout(() => pickNextQuestion(), 1000);
     } else {
         if (quizMode === 'capital' || quizMode === 'state-capital') {
-            const capName = quizMode === 'capital'
+            const correctCap = quizMode === 'capital'
                 ? capitalData[currentQuestion.properties.name]?.capital || ''
                 : currentQuestion.properties.capital;
-            feedbackEl.textContent = `✗ Wrong! ${capName} is the capital of ${currentQuestion.properties.name}`;
+            const clickedCap = quizMode === 'capital'
+                ? capitalData[clickedItem.properties.name]?.capital || ''
+                : clickedItem.properties.capital || '';
+            const clickedLabel = clickedCap
+                ? `${clickedItem.properties.name} (${clickedCap})`
+                : clickedItem.properties.name;
+            feedbackEl.textContent = `✗ Wrong! You clicked ${clickedLabel}. ${correctCap} is the capital of ${currentQuestion.properties.name}`;
         } else {
             feedbackEl.textContent = `✗ Wrong! That was ${clickedItem.properties.name}`;
         }
@@ -690,8 +781,8 @@ function checkQuizAnswer(clickedItem) {
 function updateQuizColors() {
     if (quizMode === 'state' || quizMode === 'state-capital') {
         globe.polygonAltitude(d => {
-            if (answeredItems.has(d.properties.name) || wrongItems.has(d.properties.name)) return altitudes.answered;
-            return altitudes.selected;
+            if (answeredItems.has(d.properties.name) || wrongItems.has(d.properties.name)) return stateAnsweredAltitude();
+            return stateAltitude();
         }).polygonCapColor(d => {
             if (answeredItems.has(d.properties.name)) return countryQuizColors.correct;
             if (wrongItems.has(d.properties.name)) return countryQuizColors.wrong;
@@ -720,8 +811,8 @@ function updateQuizColors() {
     // Update capital dot colors for capital and state-capital quizzes
     if (quizActive && (quizMode === 'capital' || quizMode === 'state-capital')) {
         globe.pointAltitude(d => {
-            const base = answeredItems.has(d.key) || wrongItems.has(d.key) ? altitudes.answered : altitudes.selected;
-            return base + (altitudes.capitalOffset || 0);
+            const base = answeredItems.has(d.key) || wrongItems.has(d.key) ? stateAnsweredAltitude() : stateAltitude();
+            return base + (altitudes.capitalOffset || 0) * (globe.pointOfView().altitude / defaultZoom);
         }).pointColor(d => {
             if (answeredItems.has(d.key)) return capitalColors.correct;
             if (wrongItems.has(d.key)) return capitalColors.wrong;

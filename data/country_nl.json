@@ -7,9 +7,9 @@
 	},
 	"center": {
 		"lat": 52.2,
-		"lon": 5.3
+		"lon": 5.7
 	},
-	"zoom": 0.15,
+	"zoom": 0.08,
 	"topoObjects": ["provincie_2026"],
 	"nameProps": ["statnaam"],
 	"states": [
