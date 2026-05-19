@@ -1,0 +1,29 @@
+{
+"bounds": {
+"minLon": -8.65,
+"maxLon": 1.80,
+"minLat": 49.86,
+"maxLat": 60.86
+},
+"center": {
+"lat": 54.5,
+"lon": -3.2
+},
+"zoom": 0.4,
+"topoObjects": ["rgn"],
+"nameProps": ["areanm"],
+"capitals": {
+"North East": { "capital": "Newcastle upon Tyne", "lat": 54.9783, "lon": -1.6178 },
+"North West": { "capital": "Manchester", "lat": 53.4808, "lon": -2.2426 },
+"Yorkshire and The Humber": { "capital": "Leeds", "lat": 53.7997, "lon": -1.5492 },
+"East Midlands": { "capital": "Nottingham", "lat": 52.9548, "lon": -1.1581 },
+"West Midlands": { "capital": "Birmingham", "lat": 52.4862, "lon": -1.8904 },
+"East of England": { "capital": "Cambridge", "lat": 52.2053, "lon": 0.1218 },
+"London": { "capital": "London", "lat": 51.5074, "lon": -0.1278 },
+"South East": { "capital": "Guildford", "lat": 51.2362, "lon": -0.5704 },
+"South West": { "capital": "Exeter", "lat": 50.7236, "lon": -3.5275 },
+"Scotland": { "capital": "Edinburgh", "lat": 55.9533, "lon": -3.1883 },
+"Wales": { "capital": "Cardiff", "lat": 51.4816, "lon": -3.1791 },
+"Northern Ireland": { "capital": "Belfast", "lat": 54.5973, "lon": -5.9301 }
+}
+}

@@ -1,0 +1,28 @@
+{
+	"bounds": {
+		"minLon": 2.5,
+		"maxLon": 6.4,
+		"minLat": 49.5,
+		"maxLat": 51.5
+	},
+	"center": {
+		"lat": 50.6,
+		"lon": 4.5
+	},
+	"zoom": 0.08,
+	"topoObjects": ["provinces"],
+	"nameProps": ["name_nl", "reg_nl"],
+	"capitals": {
+		"Brussels Hoofdstedelijk Gewest": { "capital": "Brussel / Bruxelles", "lat": 50.8503, "lon": 4.3517 },
+		"Provincie Antwerpen": { "capital": "Antwerpen", "lat": 51.2213, "lon": 4.4051 },
+		"Provincie Limburg": { "capital": "Hasselt", "lat": 50.9309, "lon": 5.3378 },
+		"Provincie Oost-Vlaanderen": { "capital": "Gent", "lat": 51.0543, "lon": 3.7174 },
+		"Provincie Vlaams-Brabant": { "capital": "Leuven", "lat": 50.8798, "lon": 4.7005 },
+		"Provincie West-Vlaanderen": { "capital": "Brugge", "lat": 51.2093, "lon": 3.2247 },
+		"Provincie Waals-Brabant": { "capital": "Wavre", "lat": 50.7176, "lon": 4.6092 },
+		"Provincie Henegouwen": { "capital": "Mons", "lat": 50.4542, "lon": 3.9523 },
+		"Provincie Luik": { "capital": "Luik / Liège", "lat": 50.6326, "lon": 5.5797 },
+		"Provincie Luxemburg": { "capital": "Aarlen / Arlon", "lat": 49.6838, "lon": 5.8166 },
+		"Provincie Namen": { "capital": "Namen / Namur", "lat": 50.4669, "lon": 4.8675 }
+	}
+}

@@ -17,6 +17,10 @@ A lightweight browser quiz that helps you learn geography by guessing US states 
 - US states: https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json
 - Countries: https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json
 - Germany : https://github.com/AliceWi/TopoJSON-Germany
+- France : https://github.com/gregoiredavid/france-geojson
+- Belgium : https://github.com/bmesuere/belgium-topojson
+- UK : https://github.com/ONSdigital/uk-topojson
+- Spaing : https://github.com/codeforgermany/click_that_hood
 
 
 ## TOOLS
