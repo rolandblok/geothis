@@ -23,7 +23,8 @@ const stateQuizCountryMap = {
     'United States of America': 'usa',
     'Canada': 'canada',
     'Mexico': 'mexico',
-    'Netherlands': 'nl'
+    'Netherlands': 'nl',
+    'Germany': 'germany'
 };
 
 // Translations
@@ -470,10 +471,11 @@ async function startStateQuiz(countryCode, mode = 'state') {
     globe.controls().autoRotate = false;
     globe.controls().enableRotate = false;
     const titles = {
-        usa:    { state: 'United States – States',      'state-capital': 'United States – State Capitals' },
-        canada: { state: 'Canada – Provinces',          'state-capital': 'Canada – Province Capitals' },
-        mexico: { state: 'Mexico – States',             'state-capital': 'Mexico – State Capitals' },
-        nl:     { state: 'Netherlands – Provinces',     'state-capital': 'Netherlands – Province Capitals' }
+        usa:     { state: 'United States – States',      'state-capital': 'United States – State Capitals' },
+        canada:  { state: 'Canada – Provinces',          'state-capital': 'Canada – Province Capitals' },
+        mexico:  { state: 'Mexico – States',             'state-capital': 'Mexico – State Capitals' },
+        nl:      { state: 'Netherlands – Provinces',     'state-capital': 'Netherlands – Province Capitals' },
+        germany: { state: 'Germany – States',            'state-capital': 'Germany – State Capitals' }
     };
     try {
         await loadStatesData(countryCode, titles[countryCode]?.[mode] || countryCode);
@@ -486,10 +488,11 @@ async function startStateQuiz(countryCode, mode = 'state') {
 
 // Country configurations for state/province loading
 const countryConfigs = {
-    usa:    { configFile: 'data/country_usa.json',    topoFile: './data/country_usa_TopoJSON.json' },
-    canada: { configFile: 'data/country_canada.json', topoFile: './data/country_canada_TopoJSON.json' },
-    mexico: { configFile: 'data/country_mexico.json', topoFile: './data/country_mexico_TopoJSON.json' },
-    nl:     { configFile: 'data/country_nl.json',     topoFile: './data/country_nl_TopoJSON.json' }
+    usa:     { configFile: 'data/country_usa.json',     topoFile: './data/country_usa_TopoJSON.json' },
+    canada:  { configFile: 'data/country_canada.json',  topoFile: './data/country_canada_TopoJSON.json' },
+    mexico:  { configFile: 'data/country_mexico.json',  topoFile: './data/country_mexico_TopoJSON.json' },
+    nl:      { configFile: 'data/country_nl.json',      topoFile: './data/country_nl_TopoJSON.json' },
+    germany: { configFile: 'data/country_germany.json', topoFile: './data/country_germany_TopoJSON.json' }
 };
 
 // Load states/provinces data for a country

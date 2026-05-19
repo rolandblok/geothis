@@ -1,0 +1,115 @@
+{
+	"bounds": {
+		"minLon": 5.87,
+		"maxLon": 15.04,
+		"minLat": 47.27,
+		"maxLat": 55.06
+	},
+	"center": {
+		"lat": 51.46,
+		"lon": 10.45
+	},
+	"zoom": 0.17,
+	"topoObjects": ["states"],
+	"nameProps": ["name"],
+	"states": [
+		"baden-württemberg",
+		"bayern",
+		"berlin",
+		"brandenburg",
+		"bremen",
+		"hamburg",
+		"hessen",
+		"mecklenburg-vorpommern",
+		"niedersachsen",
+		"nordrhein-westfalen",
+		"rheinland-pfalz",
+		"saarland",
+		"sachsen",
+		"sachsen-anhalt",
+		"schleswig-holstein",
+		"thüringen"
+	],
+	"capitals": {
+		"Baden-Württemberg": {
+			"capital": "Stuttgart",
+			"lat": 48.7758,
+			"lon": 9.1829
+		},
+		"Bayern": {
+			"capital": "München",
+			"lat": 48.1351,
+			"lon": 11.5820
+		},
+		"Berlin": {
+			"capital": "Berlin",
+			"lat": 52.5200,
+			"lon": 13.4050
+		},
+		"Brandenburg": {
+			"capital": "Potsdam",
+			"lat": 52.3906,
+			"lon": 13.0645
+		},
+		"Bremen": {
+			"capital": "Bremen",
+			"lat": 53.0793,
+			"lon": 8.8017
+		},
+		"Hamburg": {
+			"capital": "Hamburg",
+			"lat": 53.5511,
+			"lon": 9.9937
+		},
+		"Hessen": {
+			"capital": "Wiesbaden",
+			"lat": 50.0782,
+			"lon": 8.2398
+		},
+		"Mecklenburg-Vorpommern": {
+			"capital": "Schwerin",
+			"lat": 53.6355,
+			"lon": 11.4012
+		},
+		"Niedersachsen": {
+			"capital": "Hannover",
+			"lat": 52.3759,
+			"lon": 9.7320
+		},
+		"Nordrhein-Westfalen": {
+			"capital": "Düsseldorf",
+			"lat": 51.2277,
+			"lon": 6.7735
+		},
+		"Rheinland-Pfalz": {
+			"capital": "Mainz",
+			"lat": 49.9929,
+			"lon": 8.2473
+		},
+		"Saarland": {
+			"capital": "Saarbrücken",
+			"lat": 49.2402,
+			"lon": 6.9969
+		},
+		"Sachsen": {
+			"capital": "Dresden",
+			"lat": 51.0504,
+			"lon": 13.7373
+		},
+		"Sachsen-Anhalt": {
+			"capital": "Magdeburg",
+			"lat": 52.1205,
+			"lon": 11.6276
+		},
+		"Schleswig-Holstein": {
+			"capital": "Kiel",
+			"lat": 54.3233,
+			"lon": 10.1228
+		},
+		"Thüringen": {
+			"capital": "Erfurt",
+			"lat": 50.9848,
+			"lon": 11.0299
+		}
+	}
+}

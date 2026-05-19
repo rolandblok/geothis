@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($j = Get-Content -Raw \"c:/Users/rolan/github_roland/geothis/data/country_germany_TopoJSON.json\" | ConvertFrom-Json; Write-Output \\(\"Bbox: \" + \\($j.bbox -join ', '\\)\\); Write-Output \\(\"Transform scale: \" + \\($j.transform.scale -join ', '\\)\\); Write-Output \\(\"Transform translate: \" + \\($j.transform.translate -join ', '\\)\\))",
+      "PowerShell($j = Get-Content -Raw \"c:/Users/rolan/github_roland/geothis/data/country_germany_TopoJSON.json\" | ConvertFrom-Json; $bytes = [System.IO.File]::ReadAllBytes\\(\"c:/Users/rolan/github_roland/geothis/data/country_germany_TopoJSON.json\"\\); Write-Output \\(\"First 3 bytes hex: \" + [System.BitConverter]::ToString\\($bytes[0..2]\\)\\); $text = [System.Text.Encoding]::UTF8.GetString\\($bytes\\); $i = $text.IndexOf\\('Würt'\\); Write-Output \\(\"Has 'Württemberg' UTF8 in raw text: \" + \\($i -gt 0\\)\\))"
+    ]
+  }
+}
