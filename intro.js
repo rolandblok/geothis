@@ -27,7 +27,8 @@ const stateQuizCountryMap = {
     'Germany': 'germany',
     'France': 'france',
     'Belgium': 'belgium',
-    'United Kingdom': 'uk'
+    'United Kingdom': 'uk',
+    'Spain': 'spain'
 };
 
 // Translations
@@ -481,7 +482,8 @@ async function startStateQuiz(countryCode, mode = 'state') {
         germany: { state: 'Germany – States',            'state-capital': 'Germany – State Capitals' },
         france:  { state: 'France – Départements',        'state-capital': 'France – Département Capitals' },
         belgium: { state: 'Belgium – Provinces',         'state-capital': 'Belgium – Province Capitals' },
-        uk:      { state: 'United Kingdom – Counties & Councils', 'state-capital': 'United Kingdom – Administrative Centres' }
+        uk:      { state: 'United Kingdom – Counties & Councils', 'state-capital': 'United Kingdom – Administrative Centres' },
+        spain:   { state: 'Spain – Autonomous Communities', 'state-capital': 'Spain – Community Capitals' }
     };
     try {
         await loadStatesData(countryCode, titles[countryCode]?.[mode] || countryCode);
@@ -501,7 +503,8 @@ const countryConfigs = {
     germany: { configFile: 'data/country_germany.json', topoFile: './data/country_germany_TopoJSON.json' },
     france:  { configFile: 'data/country_france.json',  topoFile: './data/country_france_TopoJSON.json' },
     belgium: { configFile: 'data/country_belgium.json', topoFile: './data/country_belgium_TopoJSON.json' },
-    uk:      { configFile: 'data/country_uk.json',      topoFile: './data/country_uk_TopoJSON.json' }
+    uk:      { configFile: 'data/country_uk.json',      topoFile: './data/country_uk_TopoJSON.json' },
+    spain:   { configFile: 'data/country_spain.json',   topoFile: './data/country_spain_TopoJSON.json' }
 };
 
 // Load states/provinces data for a country

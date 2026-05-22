@@ -1,0 +1,34 @@
+{
+	"bounds": {
+		"minLon": -9.5,
+		"maxLon": 4.5,
+		"minLat": 35.5,
+		"maxLat": 43.8
+	},
+	"center": {
+		"lat": 36.6,
+		"lon": -7.8
+	},
+	"zoom": 0.32,
+	"topoObjects": ["country_spain_TopoJSON"],
+	"nameProps": ["name"],
+	"capitals": {
+		"Andalucia": { "capital": "Sevilla", "lat": 37.3891, "lon": -5.9845 },
+		"Aragon": { "capital": "Zaragoza", "lat": 41.6488, "lon": -0.8891 },
+		"Asturias": { "capital": "Oviedo", "lat": 43.3602, "lon": -5.8448 },
+		"Baleares": { "capital": "Palma", "lat": 39.5696, "lon": 2.6502 },
+		"Canarias": { "capital": "Las Palmas", "lat": 28.1235, "lon": -15.4363 },
+		"Cantabria": { "capital": "Santander", "lat": 43.4623, "lon": -3.8099 },
+		"Castilla-La Mancha": { "capital": "Toledo", "lat": 39.8628, "lon": -4.0273 },
+		"Castilla-Leon": { "capital": "Valladolid", "lat": 41.6523, "lon": -4.7245 },
+		"Cataluña": { "capital": "Barcelona", "lat": 41.3851, "lon": 2.1734 },
+		"Extremadura": { "capital": "Mérida", "lat": 38.9166, "lon": -6.3498 },
+		"Galicia": { "capital": "Santiago de Compostela", "lat": 42.8782, "lon": -8.5448 },
+		"La Rioja": { "capital": "Logroño", "lat": 42.466, "lon": -2.4796 },
+		"Madrid": { "capital": "Madrid", "lat": 40.4168, "lon": -3.7038 },
+		"Murcia": { "capital": "Murcia", "lat": 37.9921, "lon": -1.1307 },
+		"Navarra": { "capital": "Pamplona", "lat": 42.8169, "lon": -1.6432 },
+		"Pais Vasco": { "capital": "Vitoria-Gasteiz", "lat": 42.846, "lon": -2.6724 },
+		"Valencia": { "capital": "Valencia", "lat": 39.4699, "lon": -0.3763 }
+	}
+}
