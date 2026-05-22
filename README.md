@@ -24,7 +24,7 @@ A lightweight browser quiz that helps you learn geography by guessing US states 
 - Italy : https://github.com/openpolis/geojson-italy
 
 
-## TOOLS
+## TOOLS used
 [globe.gl](https://globe.gl/)
 
 [space-3d](https://github.com/wwwtyro/space-3d) — procedural space scene technique (Rye Terrell, Unlicense) [live](https://tools.wwwtyro.net/space-3d/index.html#animationSpeed=1&fov=80&nebulae=true&pointStars=true&resolution=1024&seed=4odf54pg07w0&stars=true&sun=true)
@@ -33,6 +33,9 @@ A lightweight browser quiz that helps you learn geography by guessing US states 
 
 [jsonformatter.org](jsonformatter.org)
 
-Mexico : python tool to get and convert. Simplyfy wiht mapshaper
-
 [favicon.io](https://favicon.io/favicon-converter/)
+
+Included tools/
+
+get_mexico_states.py : python tool to get and convert. Simplyfy with mapshaper
+

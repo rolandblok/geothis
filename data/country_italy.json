@@ -1,0 +1,37 @@
+{
+	"bounds": {
+		"minLon": 6.6,
+		"maxLon": 18.6,
+		"minLat": 35.5,
+		"maxLat": 47.1
+	},
+	"center": {
+		"lat": 42.0,
+		"lon": 12.5
+	},
+	"zoom": 0.35,
+	"topoObjects": ["regions"],
+	"nameProps": ["reg_name"],
+	"capitals": {
+		"Abruzzo":                        { "capital": "L'Aquila",  "lat": 42.352,  "lon": 13.398 },
+		"Basilicata":                     { "capital": "Potenza",   "lat": 40.642,  "lon": 15.800 },
+		"Calabria":                       { "capital": "Catanzaro", "lat": 38.910,  "lon": 16.588 },
+		"Campania":                       { "capital": "Napoli",    "lat": 40.851,  "lon": 14.268 },
+		"Emilia-Romagna":                 { "capital": "Bologna",   "lat": 44.494,  "lon": 11.342 },
+		"Friuli-Venezia Giulia":          { "capital": "Trieste",   "lat": 45.649,  "lon": 13.777 },
+		"Lazio":                          { "capital": "Roma",      "lat": 41.902,  "lon": 12.496 },
+		"Liguria":                        { "capital": "Genova",    "lat": 44.407,  "lon": 8.934  },
+		"Lombardia":                      { "capital": "Milano",    "lat": 45.464,  "lon": 9.189  },
+		"Marche":                         { "capital": "Ancona",    "lat": 43.616,  "lon": 13.518 },
+		"Molise":                         { "capital": "Campobasso","lat": 41.563,  "lon": 14.659 },
+		"Piemonte":                       { "capital": "Torino",    "lat": 45.070,  "lon": 7.686  },
+		"Puglia":                         { "capital": "Bari",      "lat": 41.125,  "lon": 16.867 },
+		"Sardegna":                       { "capital": "Cagliari",  "lat": 39.223,  "lon": 9.122  },
+		"Sicilia":                        { "capital": "Palermo",   "lat": 38.115,  "lon": 13.362 },
+		"Toscana":                        { "capital": "Firenze",   "lat": 43.769,  "lon": 11.256 },
+		"Trentino-Alto Adige/Südtirol":   { "capital": "Trento",    "lat": 46.074,  "lon": 11.121 },
+		"Umbria":                         { "capital": "Perugia",   "lat": 43.110,  "lon": 12.389 },
+		"Valle d'Aosta/Vallée d'Aoste":   { "capital": "Aosta",     "lat": 45.737,  "lon": 7.315  },
+		"Veneto":                         { "capital": "Venezia",   "lat": 45.437,  "lon": 12.332 }
+	}
+}
