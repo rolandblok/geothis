@@ -71,7 +71,7 @@ let continentNames = {};
 // Continent colors – loaded from data/settings.json
 let continentColors = {};
 let borders = { strokeColor: 'rgba(255,255,255,1)', sideColor: 'rgba(0,100,200,0.15)' };
-let backgroundColor = 'rgba(15, 23, 42, 1)';
+let backgroundColor = 'rgba(0, 0, 0, 0)';
 let altitudes = { normal: 0.01, selected: 0.09, answered: 0.005 };
 let capitalColors = { normal: 'rgba(255, 255, 255, 0.9)', correct: 'rgba(22, 163, 74, 0.9)', wrong: 'rgba(185, 28, 28, 0.9)' };
 let countryQuizColors = { correct: 'rgba(34, 197, 94, 0.7)', wrong: 'rgba(239, 68, 68, 0.7)' };
@@ -144,6 +144,7 @@ const globe = Globe()
     (document.getElementById('globeViz'))
     .globeImageUrl(textures[currentTextureIndex])
     .backgroundColor(backgroundColor)
+    .backgroundImageUrl(generateSkybox({ width: 2048, height: 2048, seed: "1", numNebulae: 2, numBrightStars: 50, sun: true }))
     .atmosphereColor('#3b82f6')
     .atmosphereAltitude(0.15)
     .width(window.innerWidth)

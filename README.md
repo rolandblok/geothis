@@ -21,10 +21,13 @@ A lightweight browser quiz that helps you learn geography by guessing US states 
 - Belgium : https://github.com/bmesuere/belgium-topojson
 - UK : https://github.com/ONSdigital/uk-topojson
 - Spaing : https://github.com/codeforgermany/click_that_hood
+- Italy : https://github.com/openpolis/geojson-italy
 
 
 ## TOOLS
 [globe.gl](https://globe.gl/)
+
+[space-3d](https://github.com/wwwtyro/space-3d) — procedural space scene technique (Rye Terrell, Unlicense) [live](https://tools.wwwtyro.net/space-3d/index.html#animationSpeed=1&fov=80&nebulae=true&pointStars=true&resolution=1024&seed=4odf54pg07w0&stars=true&sun=true)
 
 [Simplyfy TOPO JSON](https://mapshaper.org/)
 
